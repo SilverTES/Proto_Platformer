@@ -72,16 +72,16 @@ namespace Proto_00
             SetPivot(12, 16);
 
             // Create Collide Point of Hero
-            AddPoint((int)HotPoints.UL, new Vector2(-12, -20));
-            AddPoint((int)HotPoints.UR, new Vector2(+12, -20));
+            AddPoint((int)HotPoints.UL, new Vector2(-10, -20));
+            AddPoint((int)HotPoints.UR, new Vector2(+10, -20));
 
             AddPoint((int)HotPoints.DL, new Vector2(-10, +20));
             AddPoint((int)HotPoints.DR, new Vector2(+10, +20));
 
-            AddPoint((int)HotPoints.LU, new Vector2(-16, -6));
+            AddPoint((int)HotPoints.LU, new Vector2(-16, -8));
             AddPoint((int)HotPoints.LD, new Vector2(-16, +6));
 
-            AddPoint((int)HotPoints.RU, new Vector2(+16, -6));
+            AddPoint((int)HotPoints.RU, new Vector2(+16, -8));
             AddPoint((int)HotPoints.RD, new Vector2(+16, +6));
 
 

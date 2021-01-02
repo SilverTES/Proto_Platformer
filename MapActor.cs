@@ -352,7 +352,7 @@ namespace Proto_00
                     _onJump = true;
 
                     _angleMove.Y = Geo.RAD_U;
-                    _velocity.Y = jumpPower + 2;
+                    _velocity.Y = jumpPower + 1;
 
 
                     CAN_WALL_JUMP_L = false;
@@ -770,6 +770,8 @@ namespace Proto_00
             }
             if (!CAN_MOVE_UP)
             {
+
+                Console.WriteLine("!! Touch Top !!");
                 _preCollisionRayCastY = (_y + _finalVector.Y) - _topY;
                 _finalVector.Y -= _preCollisionRayCastY;
 
