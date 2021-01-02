@@ -105,14 +105,14 @@ namespace Proto_00
             _contactPoints[(int)HotPoints.DL].SetRayCast(0, +_speedMax.Y);
             _contactPoints[(int)HotPoints.DR].SetRayCast(0, +_speedMax.Y);
 
-            _contactPoints[(int)HotPoints.LU].SetRayCast(-_speedMax.X*2, 0);
-            _contactPoints[(int)HotPoints.LD].SetRayCast(-_speedMax.X*2, 0);
+            _contactPoints[(int)HotPoints.LU].SetRayCast(-_speedMax.X*4, 0);
+            _contactPoints[(int)HotPoints.LD].SetRayCast(-_speedMax.X*4, 0);
 
-            _contactPoints[(int)HotPoints.RU].SetRayCast(+_speedMax.X*2, 0);
-            _contactPoints[(int)HotPoints.RD].SetRayCast(+_speedMax.X*2, 0);
+            _contactPoints[(int)HotPoints.RU].SetRayCast(+_speedMax.X*4, 0);
+            _contactPoints[(int)HotPoints.RD].SetRayCast(+_speedMax.X*4, 0);
 
-            _contactPoints[(int)HotPoints.EL].SetRayCast(-_speedMax.X*2, 0);
-            _contactPoints[(int)HotPoints.ER].SetRayCast(+_speedMax.X*2, 0);
+            _contactPoints[(int)HotPoints.EL].SetRayCast(-_speedMax.X*4, 0);
+            _contactPoints[(int)HotPoints.ER].SetRayCast(+_speedMax.X*4, 0);
 
             //_isLand = true;
 

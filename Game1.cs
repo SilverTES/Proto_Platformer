@@ -157,7 +157,7 @@ namespace Proto_00
 
             // Flip to FinalRenderTarget ! 
             _window.SetRenderTarget(null);
-            _window.Batch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearClamp);
+            _window.Batch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp);
 
             _window.RenderFinalTarget(Color.White);
 

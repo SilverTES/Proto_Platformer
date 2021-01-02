@@ -337,11 +337,32 @@ namespace Proto_00
 
                 _angleMove.Y = Geo.RAD_U;
                 _velocity.Y = jumpPower;
+                return true;
             }
-            else
-                return false;
+            else if (MOVE_JUMP) // Wall Jump
+            {
+                if (((CAN_WALL_JUMP_R && !_contactPoints[(int)HotPoints.ER]._isContact) || (CAN_WALL_JUMP_L && !_contactPoints[(int)HotPoints.EL]._isContact)) && !_isPush)
+                {
+                    
+                    Console.WriteLine("Wall Jump !");
 
-            return true;
+                    //SetStatus(Status.IS_GRAB);
+                    SetStatus(Status.IS_JUMP);
+
+                    _onJump = true;
+
+                    _angleMove.Y = Geo.RAD_U;
+                    _velocity.Y = jumpPower + 2;
+
+
+                    CAN_WALL_JUMP_L = false;
+                    CAN_WALL_JUMP_R = false;
+                    
+                    return true;
+                }
+            }
+
+            return false;
         }
         public void Fall()
         {
@@ -703,69 +724,6 @@ namespace Proto_00
                     }
 
                 }
-
-                //if ((!_contactPoints[(int)HotPoints.EL]._isContact || _contactPoints[(int)HotPoints.EL]._tile._tileSet._properties.ContainsKey("ClimbR")) &&
-                //    !CAN_MOVE_LEFT && CAN_MOVE_UP && CAN_MOVE_DOWN)
-                //{
-                //    CAN_CLIMB_L = true;
-
-                //    //TileMap tileClimb = _map2D.Get(_contactPoints[(int)HotPoints.EL]._mapX, _contactPoints[(int)HotPoints.EL]._mapY);
-
-                //    if (_contactPoints[(int)HotPoints.EL]._tile != null )
-                //    {
-                //        if (_contactPoints[(int)HotPoints.DL]._mapY == _contactPoints[(int)HotPoints.EL]._mapY) // if DL & EL in same tile !
-                //        {
-                //            _grabY = _contactPoints[(int)HotPoints.EL]._firstline.B.Y + _rect.Height / 2 - 2;
-                //            _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._firstline.B.X;
-                //            _ledgeGrip.Y = _contactPoints[(int)HotPoints.EL]._firstline.B.Y;
-                //        }
-                //        else
-                //        {
-                //            _grabY = (_contactPoints[(int)HotPoints.EL]._mapY + 1) * _tileH + _rect.Height / 2 - 2;
-                //            _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._mapX * _tileW + _tileW;
-                //            _ledgeGrip.Y = (_contactPoints[(int)HotPoints.EL]._mapY + 1) * _tileH;
-                //        }
-
-                //    }
-                //    else if (_contactPoints[(int)HotPoints.LU]._tile._tileSet != null)
-                //    {
-                //        _grabY = _contactPoints[(int)HotPoints.LU]._firstline.B.Y + _rect.Height / 2 - 2;
-                //        _ledgeGrip.X = _contactPoints[(int)HotPoints.LU]._firstline.B.X;
-                //        _ledgeGrip.Y = _contactPoints[(int)HotPoints.LU]._firstline.B.Y;
-                //    }
-
-
-                //}
-
-                //if ((!_contactPoints[(int)HotPoints.ER]._isContact || _contactPoints[(int)HotPoints.ER]._tile._tileSet._properties.ContainsKey("ClimbL")) &&
-                //    !CAN_MOVE_RIGHT && CAN_MOVE_UP && CAN_MOVE_DOWN)
-                //{
-                //    CAN_CLIMB_R = true;
-
-                //    TileMap tileClimb = _map2D.Get(_contactPoints[(int)HotPoints.ER]._mapX, _contactPoints[(int)HotPoints.ER]._mapY);
-
-                //    if (tileClimb != null)
-                //    {
-
-                //        _grabY = (_contactPoints[(int)HotPoints.ER]._mapY + 1) * _tileH + _rect.Height / 2 - 2;
-                //        _ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._mapX * _tileW;
-                //        _ledgeGrip.Y = (_contactPoints[(int)HotPoints.ER]._mapY + 1) * _tileH;
-
-                //        //_grabY = _contactPoints[(int)HotPoints.ER]._firstline.A.Y + _rect.Height / 2 - 2;
-                //        //_ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._firstline.A.X;
-                //        //_ledgeGrip.Y = _contactPoints[(int)HotPoints.ER]._firstline.A.Y;
-
-                //    }
-                //    else if (_contactPoints[(int)HotPoints.RU]._tile._tileSet != null)
-                //    {
-
-                //        _grabY = _contactPoints[(int)HotPoints.RU]._firstline.A.Y + _rect.Height / 2 - 2;
-                //        _ledgeGrip.X = _contactPoints[(int)HotPoints.RU]._firstline.A.X;
-                //        _ledgeGrip.Y = _contactPoints[(int)HotPoints.RU]._firstline.A.Y;
-                //    }
-
-                //}
-
                 #endregion
 
             }
@@ -793,10 +751,6 @@ namespace Proto_00
                     _landY_L = _landY = _landY_R;
                 }
             }
-
-
-
-
 
             #endregion
 
@@ -831,11 +785,13 @@ namespace Proto_00
                 {
                     _isPush = true;
 
-                    //if (!CAN_WALL_JUMP_R && _status == Status.IS_FALL && CAN_MOVE_UP)
-                    //{
-                    //    _onCanWallJump = true;
-                    //    CAN_WALL_JUMP_R = true;
-                    //}
+                    if (!CAN_WALL_JUMP_R && _status == Status.IS_FALL && CAN_MOVE_UP && _contactPoints[(int)HotPoints.EL]._isContact)
+                    {
+                        Console.WriteLine("CAN WALL JUMP R");
+
+                        _onCanWallJump = true;
+                        CAN_WALL_JUMP_R = true;
+                    }
                 }
             }
             if (!CAN_MOVE_RIGHT)
@@ -848,11 +804,13 @@ namespace Proto_00
                 {
                     _isPush = true;
 
-                    //if (!CAN_WALL_JUMP_L && _status == Status.IS_FALL && CAN_MOVE_UP)
-                    //{
-                    //    _onCanWallJump = true;
-                    //    CAN_WALL_JUMP_L = true;
-                    //}
+                    if (!CAN_WALL_JUMP_L && _status == Status.IS_FALL && CAN_MOVE_UP && _contactPoints[(int)HotPoints.ER]._isContact)
+                    {
+                        Console.WriteLine("CAN WALL JUMP L");
+
+                        _onCanWallJump = true;
+                        CAN_WALL_JUMP_L = true;
+                    }
                 }
             }
 
@@ -876,7 +834,10 @@ namespace Proto_00
             {
                 float factor = 1f;
 
-                if ((CAN_WALL_JUMP_L || CAN_WALL_JUMP_R) && _isPush && CAN_MOVE_UP) factor = .05f; // Slow down when grip wall
+                if (((CAN_WALL_JUMP_L && _contactPoints[(int)HotPoints.ER]._isContact) || (CAN_WALL_JUMP_R && _contactPoints[(int)HotPoints.EL]._isContact) ) && _isPush && CAN_MOVE_UP)
+                {
+                    factor = .05f; // Slow down when grip wall
+                }
 
                 _velocity.Y += _acceleration.Y * factor;
 
@@ -902,19 +863,6 @@ namespace Proto_00
                     if (CAN_GRAB_L) {CAN_GRAB_L = false; CAN_CLIMB_L = true;}
                     if (CAN_GRAB_R) {CAN_GRAB_R = false; CAN_CLIMB_R = true;}
 
-                    //if (CAN_MOVE_DOWN)
-                    //{
-                    //    if (CAN_CLIMB_L && MOVE_RIGHT)
-                    //    {
-                    //        //_isLedgeL = false;
-                    //        Fall();
-                    //    }
-                    //    if (CAN_CLIMB_R && MOVE_LEFT)
-                    //    {
-                    //        //_isLedgeR = false;
-                    //        Fall();
-                    //    }
-                    //}
 
                     if (!_isPush) // When release button push then readyToClimb !
                     {
@@ -941,9 +889,6 @@ namespace Proto_00
                         if (CAN_CLIMB_L) Climb(-1);
                         if (CAN_CLIMB_R) Climb(1);
                     }
-
-                    //if (MOVE_LEFT && CAN_CLIMB_L) Climb(-1);
-                    //if (MOVE_RIGHT && CAN_CLIMB_R) Climb(1);
 
                 }
 
@@ -1034,23 +979,6 @@ namespace Proto_00
                 }
             }
 
-
-            // Wall Jump
-            if (MOVE_JUMP)
-            {
-                //Console.WriteLine("Want Jump !");
-
-                if (( (CAN_WALL_JUMP_R && !CAN_MOVE_LEFT)  || (CAN_WALL_JUMP_L && !CAN_MOVE_RIGHT) ) && !_isPush)
-                {
-
-                    SetStatus(Status.IS_GRAB);
-                    Jump(_speedMax.Y);
-
-                    CAN_WALL_JUMP_L = false;
-                    CAN_WALL_JUMP_R = false;
-                }
-
-            }
 
             if (_onCanWallJump)
             {

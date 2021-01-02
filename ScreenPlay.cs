@@ -30,7 +30,7 @@ namespace Proto_00
 
             _text._style._horizontalAlign = Style.HorizontalAlign.Center;
 
-            _text.SetLabel("ScreenPlay").SetPosition(Game1._screenW / 2, 16);
+            _text.SetLabel("ScreenPlay").SetPosition(Game1._screenW / 2, 8);
         }
 
         public override Node Update(GameTime gameTime)
