@@ -75,19 +75,19 @@ namespace Proto_00
             AddPoint((int)HotPoints.UL, new Vector2(-12, -20));
             AddPoint((int)HotPoints.UR, new Vector2(+12, -20));
 
-            AddPoint((int)HotPoints.DL, new Vector2(-12, +20));
-            AddPoint((int)HotPoints.DR, new Vector2(+12, +20));
+            AddPoint((int)HotPoints.DL, new Vector2(-10, +20));
+            AddPoint((int)HotPoints.DR, new Vector2(+10, +20));
 
-            AddPoint((int)HotPoints.LU, new Vector2(-16, -10));
+            AddPoint((int)HotPoints.LU, new Vector2(-16, -6));
             AddPoint((int)HotPoints.LD, new Vector2(-16, +6));
 
-            AddPoint((int)HotPoints.RU, new Vector2(+16, -10));
+            AddPoint((int)HotPoints.RU, new Vector2(+16, -6));
             AddPoint((int)HotPoints.RD, new Vector2(+16, +6));
 
 
             // Collide Point for Grip
-            AddPoint((int)HotPoints.EL, new Vector2(-16, -20));
-            AddPoint((int)HotPoints.ER, new Vector2(+16, -20));
+            AddPoint((int)HotPoints.EL, new Vector2(-16, -16));
+            AddPoint((int)HotPoints.ER, new Vector2(+16, -16));
 
         }
 
@@ -251,12 +251,17 @@ namespace Proto_00
                             Draw.Line(batch, line.A + _parent.AbsXY, line.B + _parent.AbsXY, Color.Aqua, 3f);
 
                             // Point of intersect raycast line & line Contact
-                            Draw.Point(batch, _contactPoints[i]._pointContact + _parent.AbsXY, 3f, Color.Red);
+                            Draw.Point(batch, _contactPoints[i]._pointContact + _parent.AbsXY, 3f, Color.ForestGreen);
                             
                             // Name of the point contact
-                            //Draw.TopCenterString(batch, Game1._fontMain,((HotPoints)i).ToString() , _contactPoints[i]._pointContact.X + _parent.AbsX, _contactPoints[i]._pointContact.Y + _parent.AbsY, Color.White);
 
                             
+                        }
+
+                        if (i==(int)HotPoints.EL)
+                        {
+                            Draw.Line(batch, _contactPoints[i]._firstline.A + _parent.AbsXY, _contactPoints[i]._firstline.B + _parent.AbsXY, Color.Magenta, 2f);
+                            Draw.TopCenterString(batch, Game1._fontMain, _contactPoints[i]._pos.Y.ToString("0")+","+_contactPoints[i]._pos.Y.ToString("0") , _contactPoints[i]._pos.X + _parent.AbsX, _contactPoints[i]._pos.Y + _parent.AbsY, Color.White);
                         }
 
                         // Contact point

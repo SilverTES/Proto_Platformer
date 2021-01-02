@@ -42,10 +42,10 @@ namespace Proto_00
             _mapPosY = (int)(_y / _tileH);
 
             //TILE_AT = _map2D.Get(_mapPosX, _mapPosY);
-            //TILE_AT_L = _map2D.Get(_mapPosX-1, _mapPosY);
-            //TILE_AT_R = _map2D.Get(_mapPosX+1, _mapPosY);
-            //TILE_AT_U = _map2D.Get(_mapPosX, _mapPosY-1);
-            //TILE_AT_D = _map2D.Get(_mapPosX, _mapPosY+1);
+            //TILE_AT_L = _map2D.Get(_mapPosX - 1, _mapPosY);
+            //TILE_AT_R = _map2D.Get(_mapPosX + 1, _mapPosY);
+            //TILE_AT_U = _map2D.Get(_mapPosX, _mapPosY - 1);
+            //TILE_AT_D = _map2D.Get(_mapPosX, _mapPosY + 1);
 
             return base.Update(gameTime);
         }

@@ -56,6 +56,8 @@
  </tile>
  <tile id="6" type="2">
   <properties>
+   <property name="ClimbL" type="bool" value="false"/>
+   <property name="ClimbR" type="bool" value="false"/>
    <property name="passLevel" type="int" value="2"/>
   </properties>
   <objectgroup draworder="index" id="2">

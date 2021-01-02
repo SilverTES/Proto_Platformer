@@ -59,26 +59,24 @@ namespace Proto_00
             _raycast.X = dx;
             _raycast.Y = dy;
         }
-        public Line GetLineContact(Vector2 offset, Vector2 moveVector)
+        public Line GetLineContact(Vector2 offset, Vector2[] polygon)
         {
             _successRaycast = false;
-            _lineContact = _firstline = new Line(_polygon[0] + offset, _polygon[1] + offset);
+            _lineContact = new Line(polygon[0] + offset, polygon[1] + offset);
+            _firstline = new Line(polygon[0] + offset, polygon[1] + offset);
             _pointContact = _pos;
 
             bool isIntersect;
 
-            for(int  i=0; i<_polygon.Length-1; ++i)
+            for(int  i=0; i<polygon.Length-1; ++i)
             {
-                _lineContact.A = _polygon[i] + offset;
-                _lineContact.B = _polygon[i + 1] + offset;
-
-                //Vector2 raycast = moveVector * 2f;
-                Vector2 raycast = _raycast;
+                _lineContact.A = polygon[i] + offset;
+                _lineContact.B = polygon[i + 1] + offset;
 
                 //if (Collision2D.LineSegment(_lineContact.A, _lineContact.B, _pos - _raycast, _pos + _raycast))
-                if (Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - raycast, _pos + raycast), out isIntersect) != Vector2.Zero)
+                if (Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - _raycast, _pos + _raycast), out isIntersect) != Vector2.Zero)
                 {
-                    _pointContact = Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - raycast, _pos + raycast), out isIntersect);
+                    _pointContact = Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - _raycast, _pos + _raycast), out isIntersect);
                     //_pointContact = Collision2D.LineLineIntersection(_lineContact.A, _lineContact.B,_pos - _raycast, _pos + _raycast);
                     _successRaycast = true;
                     break;
@@ -189,6 +187,9 @@ namespace Proto_00
         public bool CAN_MOVE_DOWN = true;
         public bool CAN_MOVE_LEFT = true;
         public bool CAN_MOVE_RIGHT = true;
+
+        public bool CAN_GRAB_L = false;
+        public bool CAN_GRAB_R = false;
 
         public bool CAN_CLIMB_L = false;
         public bool CAN_CLIMB_R = false;
@@ -366,6 +367,9 @@ namespace Proto_00
         }
         public bool Grab()
         {
+            CAN_GRAB_L = false;
+            CAN_GRAB_R = false;
+
             if (_status == Status.IS_FALL) // || _status == Status.IS_JUMP)
             {
                 SetStatus(Status.IS_GRAB);
@@ -381,6 +385,10 @@ namespace Proto_00
         {
             if (_readyToClimb)
             {
+                CAN_CLIMB_L = false;
+                CAN_CLIMB_R = false;
+
+                Console.WriteLine("Climb()");
                 SetStatus(Status.IS_CLIMB); 
                 _onClimb = true; 
                 _readyToClimb = false; 
@@ -406,8 +414,8 @@ namespace Proto_00
             CAN_MOVE_LEFT = true;
             CAN_MOVE_RIGHT = true;
 
-            CAN_CLIMB_L = false;
-            CAN_CLIMB_R = false;
+            CAN_GRAB_L = false;
+            CAN_GRAB_R = false;
 
             //CAN_WALL_JUMP = false;
 
@@ -485,7 +493,7 @@ namespace Proto_00
                             if (_contactPoints[i]._polygon != null)
                             {
                                 // get polygon[] in the tile where is the contactPoint of the global Tileset
-                                _contactPoints[i].GetLineContact(_contactPoints[i]._offset, _finalVector);
+                                _contactPoints[i].GetLineContact(_contactPoints[i]._offset, _contactPoints[i]._polygon);
 
                                 _contactPoints[i]._isContact =
                                     Collision2D.PointInPolygon(_contactPoints[i]._pos, _contactPoints[i]._polygon, _contactPoints[i]._polygon.Length, _contactPoints[i]._offset) &&
@@ -620,59 +628,143 @@ namespace Proto_00
 
                 #region Contact : GRAB LEDGE
 
-                if (_contactPoints[(int)HotPoints.LU]._tile != null)
-                    if ((!_contactPoints[(int)HotPoints.EL]._isContact || _contactPoints[(int)HotPoints.EL]._tile._tileSet._properties.ContainsKey("ClimbR")) &&
-                        !CAN_MOVE_LEFT && CAN_MOVE_UP && CAN_MOVE_DOWN &&
-                        _contactPoints[(int)HotPoints.LU]._isContact)
+                if (CAN_MOVE_UP && CAN_MOVE_DOWN && !CAN_MOVE_LEFT &&
+                    _contactPoints[(int)HotPoints.EL]._isContact &&
+                    Math.Abs(_contactPoints[(int)HotPoints.EL]._pos.Y - _contactPoints[(int)HotPoints.EL]._firstline.B.Y) <= 8)
+                {
+                    
+                    TileMap tileU = _map2D.Get(_contactPoints[(int)HotPoints.EL]._mapX, _contactPoints[(int)HotPoints.EL]._mapY-1);
+
+                    bool climbable = false;
+
+                    if (tileU == null)
                     {
-                        TileMap tileClimb = _map2D.Get(_contactPoints[(int)HotPoints.EL]._mapX, _contactPoints[(int)HotPoints.EL]._mapY);
-
-                        if (tileClimb != null )
+                        climbable = true;
+                    }
+                    else if (tileU._id != Const.NoIndex) // test is tile at up is empty or not, if not then test is climbable on Left
+                    {
+                        if (tileU._tileSet._properties.ContainsKey("ClimbR"))
                         {
-                            CAN_CLIMB_L = true;
-
-                            _grabY = (_contactPoints[(int)HotPoints.EL]._mapY + 1) * _tileH + _rect.Height / 2 - 2;
-
-                            _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._mapX * _tileW + _tileW;
-                            _ledgeGrip.Y = (_contactPoints[(int)HotPoints.EL]._mapY + 1) * _tileH;
-
-                            if (_contactPoints[(int)HotPoints.LU]._tile._tileSet != null)
-                            {
-                                _grabY = _contactPoints[(int)HotPoints.LU]._firstline.B.Y + _rect.Height / 2 - 2;
-
-                                _ledgeGrip.X = _contactPoints[(int)HotPoints.LU]._firstline.B.X;
-                                _ledgeGrip.Y = _contactPoints[(int)HotPoints.LU]._firstline.B.Y;
-                            }
+                            climbable = true;
                         }
+                    }
+                    else
+                    {
+                        climbable = true;
+                    }
+
+                    if (climbable)
+                    {
+                        CAN_GRAB_L = true;
+
+                        _grabY = _contactPoints[(int)HotPoints.EL]._firstline.B.Y - _hotPoints[(int)HotPoints.EL].Y;
+                        
+                        _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._firstline.B.X;
+                        _ledgeGrip.Y = _contactPoints[(int)HotPoints.EL]._firstline.B.Y;
+                        
+                    }
+
+                }
+
+                if (CAN_MOVE_UP && CAN_MOVE_DOWN && !CAN_MOVE_RIGHT &&
+                    _contactPoints[(int)HotPoints.ER]._isContact &&
+                    Math.Abs(_contactPoints[(int)HotPoints.ER]._pos.Y - _contactPoints[(int)HotPoints.ER]._firstline.A.Y) <= 8)
+                {
+
+                    TileMap tileU = _map2D.Get(_contactPoints[(int)HotPoints.ER]._mapX, _contactPoints[(int)HotPoints.ER]._mapY - 1);
+
+                    bool climbable = false;
+
+                    if (tileU == null)
+                    {
+                        climbable = true;
+                    }
+                    else if (tileU._id != Const.NoIndex) // test is tile at up is empty or not, if not then test is climbable on Left
+                    {
+                        if (tileU._tileSet._properties.ContainsKey("ClimbL"))
+                        {
+                            climbable = true;
+                        }
+                    }
+                    else
+                    {
+                        climbable = true;
+                    }
+
+                    if (climbable)
+                    {
+                        CAN_GRAB_R = true;
+
+                        _grabY = _contactPoints[(int)HotPoints.ER]._firstline.A.Y - _hotPoints[(int)HotPoints.ER].Y;
+
+                        _ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._firstline.A.X;
+                        _ledgeGrip.Y = _contactPoints[(int)HotPoints.ER]._firstline.A.Y;
 
                     }
 
-                if (_contactPoints[(int)HotPoints.RU]._tile != null)
-                    if ((!_contactPoints[(int)HotPoints.ER]._isContact || _contactPoints[(int)HotPoints.ER]._tile._tileSet._properties.ContainsKey("ClimbL")) &&
-                        !CAN_MOVE_RIGHT && CAN_MOVE_UP && CAN_MOVE_DOWN &&
-                        _contactPoints[(int)HotPoints.RU]._isContact)
-                    {
-                        TileMap tileClimb = _map2D.Get(_contactPoints[(int)HotPoints.ER]._mapX, _contactPoints[(int)HotPoints.ER]._mapY);
+                }
 
-                        if (tileClimb != null)
-                        {
-                            CAN_CLIMB_R = true;
+                //if ((!_contactPoints[(int)HotPoints.EL]._isContact || _contactPoints[(int)HotPoints.EL]._tile._tileSet._properties.ContainsKey("ClimbR")) &&
+                //    !CAN_MOVE_LEFT && CAN_MOVE_UP && CAN_MOVE_DOWN)
+                //{
+                //    CAN_CLIMB_L = true;
 
-                            _grabY = (_contactPoints[(int)HotPoints.ER]._mapY + 1) * _tileH + _rect.Height / 2 - 2;
+                //    //TileMap tileClimb = _map2D.Get(_contactPoints[(int)HotPoints.EL]._mapX, _contactPoints[(int)HotPoints.EL]._mapY);
 
-                            _ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._mapX * _tileW;
-                            _ledgeGrip.Y = (_contactPoints[(int)HotPoints.ER]._mapY + 1) * _tileH;
+                //    if (_contactPoints[(int)HotPoints.EL]._tile != null )
+                //    {
+                //        if (_contactPoints[(int)HotPoints.DL]._mapY == _contactPoints[(int)HotPoints.EL]._mapY) // if DL & EL in same tile !
+                //        {
+                //            _grabY = _contactPoints[(int)HotPoints.EL]._firstline.B.Y + _rect.Height / 2 - 2;
+                //            _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._firstline.B.X;
+                //            _ledgeGrip.Y = _contactPoints[(int)HotPoints.EL]._firstline.B.Y;
+                //        }
+                //        else
+                //        {
+                //            _grabY = (_contactPoints[(int)HotPoints.EL]._mapY + 1) * _tileH + _rect.Height / 2 - 2;
+                //            _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._mapX * _tileW + _tileW;
+                //            _ledgeGrip.Y = (_contactPoints[(int)HotPoints.EL]._mapY + 1) * _tileH;
+                //        }
 
-                            if (_contactPoints[(int)HotPoints.RU]._tile._tileSet != null)
-                            {
-                                _grabY = _contactPoints[(int)HotPoints.RU]._firstline.A.Y + _rect.Height / 2 - 2;
+                //    }
+                //    else if (_contactPoints[(int)HotPoints.LU]._tile._tileSet != null)
+                //    {
+                //        _grabY = _contactPoints[(int)HotPoints.LU]._firstline.B.Y + _rect.Height / 2 - 2;
+                //        _ledgeGrip.X = _contactPoints[(int)HotPoints.LU]._firstline.B.X;
+                //        _ledgeGrip.Y = _contactPoints[(int)HotPoints.LU]._firstline.B.Y;
+                //    }
 
-                                _ledgeGrip.X = _contactPoints[(int)HotPoints.RU]._firstline.A.X;
-                                _ledgeGrip.Y = _contactPoints[(int)HotPoints.RU]._firstline.A.Y;
-                            }
-                        }
 
-                    }
+                //}
+
+                //if ((!_contactPoints[(int)HotPoints.ER]._isContact || _contactPoints[(int)HotPoints.ER]._tile._tileSet._properties.ContainsKey("ClimbL")) &&
+                //    !CAN_MOVE_RIGHT && CAN_MOVE_UP && CAN_MOVE_DOWN)
+                //{
+                //    CAN_CLIMB_R = true;
+
+                //    TileMap tileClimb = _map2D.Get(_contactPoints[(int)HotPoints.ER]._mapX, _contactPoints[(int)HotPoints.ER]._mapY);
+
+                //    if (tileClimb != null)
+                //    {
+
+                //        _grabY = (_contactPoints[(int)HotPoints.ER]._mapY + 1) * _tileH + _rect.Height / 2 - 2;
+                //        _ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._mapX * _tileW;
+                //        _ledgeGrip.Y = (_contactPoints[(int)HotPoints.ER]._mapY + 1) * _tileH;
+
+                //        //_grabY = _contactPoints[(int)HotPoints.ER]._firstline.A.Y + _rect.Height / 2 - 2;
+                //        //_ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._firstline.A.X;
+                //        //_ledgeGrip.Y = _contactPoints[(int)HotPoints.ER]._firstline.A.Y;
+
+                //    }
+                //    else if (_contactPoints[(int)HotPoints.RU]._tile._tileSet != null)
+                //    {
+
+                //        _grabY = _contactPoints[(int)HotPoints.RU]._firstline.A.Y + _rect.Height / 2 - 2;
+                //        _ledgeGrip.X = _contactPoints[(int)HotPoints.RU]._firstline.A.X;
+                //        _ledgeGrip.Y = _contactPoints[(int)HotPoints.RU]._firstline.A.Y;
+                //    }
+
+                //}
 
                 #endregion
 
@@ -739,7 +831,7 @@ namespace Proto_00
                 {
                     _isPush = true;
 
-                    //if (!CAN_WALL_JUMP_R && _status == Status.IS_FALL && CAN_MOVE_UP && !CAN_CLIMB_L)
+                    //if (!CAN_WALL_JUMP_R && _status == Status.IS_FALL && CAN_MOVE_UP)
                     //{
                     //    _onCanWallJump = true;
                     //    CAN_WALL_JUMP_R = true;
@@ -756,7 +848,7 @@ namespace Proto_00
                 {
                     _isPush = true;
 
-                    //if (!CAN_WALL_JUMP_L && _status == Status.IS_FALL && CAN_MOVE_UP && !CAN_CLIMB_R)
+                    //if (!CAN_WALL_JUMP_L && _status == Status.IS_FALL && CAN_MOVE_UP)
                     //{
                     //    _onCanWallJump = true;
                     //    CAN_WALL_JUMP_L = true;
@@ -764,11 +856,13 @@ namespace Proto_00
                 }
             }
 
-            if  ((CAN_CLIMB_L || CAN_CLIMB_R) && _status == Status.IS_FALL && _isPush)
+
+            if  (((CAN_GRAB_L && !CAN_MOVE_LEFT)|| (CAN_GRAB_R && !CAN_MOVE_RIGHT)) && _isPush && _status == Status.IS_FALL)
             {
                 _preCollisionRayCastY = (_y + _finalVector.Y) - _grabY;
                 _finalVector.Y -= _preCollisionRayCastY;
 
+                //Console.WriteLine($"---------------------> _grabY = {_grabY} _preCollisionRayCastY = {_preCollisionRayCastY}");
 
                 Grab();
             }
@@ -805,6 +899,9 @@ namespace Proto_00
                 {
                     _ticGrab = _tempoGrab;
 
+                    if (CAN_GRAB_L) {CAN_GRAB_L = false; CAN_CLIMB_L = true;}
+                    if (CAN_GRAB_R) {CAN_GRAB_R = false; CAN_CLIMB_R = true;}
+
                     //if (CAN_MOVE_DOWN)
                     //{
                     //    if (CAN_CLIMB_L && MOVE_RIGHT)
@@ -825,6 +922,7 @@ namespace Proto_00
 
                         if (MOVE_UP)
                         {
+                            //Console.WriteLine("Climb : MOVE_UP");
                             if (CAN_CLIMB_L) Climb(-1);
                             if (CAN_CLIMB_R) Climb(1);
                         }
@@ -837,7 +935,9 @@ namespace Proto_00
                     }
                     else if (MOVE_JUMP)
                     {
+                        //Console.WriteLine("Climb : MOVE_JUMP");
                         _readyToClimb = true;
+
                         if (CAN_CLIMB_L) Climb(-1);
                         if (CAN_CLIMB_R) Climb(1);
                     }
