@@ -215,10 +215,13 @@ namespace Proto_00
             //Draw.FillRectangleCentered(batch, AbsXY + new Vector2(0,14), new Vector2(18,12), Color.CadetBlue, 0f);
 
             Draw.FillRectangle(batch, AbsRect, Color.CadetBlue);
+            //Draw.Polygon(batch, _hotPoints.Values.ToArray(), Color.RoyalBlue, 2f, XY + _parent.AbsXY);
             Draw.Circle(batch, AbsXY, 8, 6, Color.Yellow, 2f);
-            Draw.Rectangle(batch, AbsRect, Color.RoyalBlue,2f);
+            Draw.Rectangle(batch, AbsRect, Color.RoyalBlue, 2f);
 
             //Draw.Line(batch, AbsXY, AbsXY + new Vector2(0, _tileMapLayer._map2D._tileH), Color.Red, 3);
+
+
 
             // Debug : Draw _collideP
             if (_showContactPoint)

@@ -353,6 +353,8 @@ namespace Proto_00
 
                     _angleMove.Y = Geo.RAD_U;
                     _velocity.Y = jumpPower + 1;
+                    
+                    _velocity.X = _speedMax.X;
 
 
                     CAN_WALL_JUMP_L = false;

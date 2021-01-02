@@ -13,6 +13,9 @@ namespace Proto_00
         TileMap2D _tileMap2D;
         TileMapLayer _layer0;
 
+        //TileMap2D _tileMap2DX;
+        //TileMapLayer _layerX;
+
         TmxMap _tmxMap;
         Texture2D _tileSet;
 
@@ -52,13 +55,14 @@ namespace Proto_00
             _tmxMap = new TmxMap("Content/test_slope2D.tmx");
             _tileSet = content.Load<Texture2D>("Image/" + "TileSet_Slope2D");
 
-            //_tileMap2D = new TileMap2D().Setup(new Rectangle(0, 0, Game1._screenW, Game1._screenH), Game1._screenW/_tileSize, Game1._screenH/_tileSize, _tileSize, _tileSize, 0, 0);
+            //_tileMap2DX = new TileMap2D().Setup(new Rectangle(0, 0, Game1._screenW, Game1._screenH), _tmxMap.Width, _tmxMap.Height, _tmxMap.TileWidth, _tmxMap.TileHeight, 0, 0);
+            //_layerX = _tileMap2DX.CreateLayer(null);
+
             _tileMap2D = new TileMap2D().Setup(new Rectangle(0, 0, Game1._screenW, Game1._screenH), _tmxMap.Width, _tmxMap.Height, _tmxMap.TileWidth, _tmxMap.TileHeight);
 
              _arenaSizeW = _tmxMap.Width * _tmxMap.TileWidth;
              _arenaSizeH = _tmxMap.Height * _tmxMap.TileHeight;
 
-            //_layer0 = _tileMap2D.CreateLayer(null);
             _layer0 = TileMap2D.CreateLayer(_tmxMap, _tmxMap.Layers["Tile Layer 1"], _tileSet);
 
             System.Console.WriteLine("Layer0._map2D = " + _layer0._map2D);
@@ -192,6 +196,7 @@ namespace Proto_00
 
             _tileMap2D.Render(batch, _layer0, Color.White, (int)_camera.X, (int)_camera.Y, 1f, false);
 
+            
             // Debug
             //_tileMap2D.RenderPolygonCollision(batch, _layer0, Color.MonoGameOrange, 1f, (int)_camera.X, (int)_camera.Y, 2f, default, 2f);
 
@@ -203,9 +208,6 @@ namespace Proto_00
             //Draw.Line(batch, C, new Vector2(C.X + 100, C.Y), Color.OrangeRed, 2f);
             //if  (ContactTest)
             //    Draw.Point(batch, D, 8f, Color.LightGreen);
-
-
-            Draw.RightTopString(batch, Game1._fontMain, Game1._frameCounter.Fps(), Game1._screenW - 10, 10, Color.Red);
 
             RenderChilds(batch);
 

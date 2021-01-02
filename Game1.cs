@@ -137,6 +137,7 @@ namespace Proto_00
             _window.Batch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, _camera.GetTransformation(_window._graphics.GraphicsDevice)); //, DepthStencilState.None, RasterizerState.CullCounterClockwise );
             // Draw something here !
             Screen.Render(_window.Batch);
+            Retro2D.Draw.RightTopString(_window.Batch, Game1._fontMain, Game1._frameCounter.Fps(), Game1._screenW - 2, 2, Color.Gold);
             _window.Batch.End();
 
 
@@ -157,7 +158,7 @@ namespace Proto_00
 
             // Flip to FinalRenderTarget ! 
             _window.SetRenderTarget(null);
-            _window.Batch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp);
+            _window.Batch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.AnisotropicWrap);
 
             _window.RenderFinalTarget(Color.White);
 
