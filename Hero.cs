@@ -72,11 +72,11 @@ namespace Proto_00
             SetPivot(12, 16);
 
             // Create Collide Point of Hero
-            AddPoint((int)HotPoints.UL, new Vector2(-8, -20));
-            AddPoint((int)HotPoints.UR, new Vector2(+8, -20));
+            AddPoint((int)HotPoints.UL, new Vector2(-12, -20));
+            AddPoint((int)HotPoints.UR, new Vector2(+12, -20));
 
-            AddPoint((int)HotPoints.DL, new Vector2(-8, +20));
-            AddPoint((int)HotPoints.DR, new Vector2(+8, +20));
+            AddPoint((int)HotPoints.DL, new Vector2(-12, +20));
+            AddPoint((int)HotPoints.DR, new Vector2(+12, +20));
 
             AddPoint((int)HotPoints.LU, new Vector2(-16, -10));
             AddPoint((int)HotPoints.LD, new Vector2(-16, +6));
@@ -234,11 +234,9 @@ namespace Proto_00
                         Color color = Color.GreenYellow;
 
                         // Raycast line
-                        float sumAngle = _angleMove.X + _angleMove.Y;
-                        Vector2 raycast = Geo.GetVector(sumAngle) * _finalVector * 10f;
-
-                        Draw.Line(batch, _contactPoints[i]._pos - raycast + _parent.AbsXY, _contactPoints[i]._pos + raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
-                        //Draw.Line(batch, _contactPoints[i]._pos - _contactPoints[i]._raycast + _parent.AbsXY, _contactPoints[i]._pos + _contactPoints[i]._raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
+                        //Vector2 raycast = _finalVector * 2f;
+                        //Draw.Line(batch, _contactPoints[i]._pos - raycast + _parent.AbsXY, _contactPoints[i]._pos + raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
+                        Draw.Line(batch, _contactPoints[i]._pos - _contactPoints[i]._raycast + _parent.AbsXY, _contactPoints[i]._pos + _contactPoints[i]._raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
 
                         if (_contactPoints[i]._isContact)
                         {
@@ -253,7 +251,7 @@ namespace Proto_00
                             Draw.Line(batch, line.A + _parent.AbsXY, line.B + _parent.AbsXY, Color.Aqua, 3f);
 
                             // Point of intersect raycast line & line Contact
-                            Draw.Point(batch, _contactPoints[i]._pointContact + _parent.AbsXY, 3f, Color.MediumOrchid);
+                            Draw.Point(batch, _contactPoints[i]._pointContact + _parent.AbsXY, 3f, Color.Red);
                             
                             // Name of the point contact
                             //Draw.TopCenterString(batch, Game1._fontMain,((HotPoints)i).ToString() , _contactPoints[i]._pointContact.X + _parent.AbsX, _contactPoints[i]._pointContact.Y + _parent.AbsY, Color.White);

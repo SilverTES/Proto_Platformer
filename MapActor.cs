@@ -59,7 +59,7 @@ namespace Proto_00
             _raycast.X = dx;
             _raycast.Y = dy;
         }
-        public Line GetLineContact(Vector2 offset, float angle)
+        public Line GetLineContact(Vector2 offset, Vector2 moveVector)
         {
             _successRaycast = false;
             _lineContact = _firstline = new Line(_polygon[0] + offset, _polygon[1] + offset);
@@ -67,23 +67,23 @@ namespace Proto_00
 
             bool isIntersect;
 
-            //if  (_polygon != null)
-                for(int  i=0; i<_polygon.Length-1; ++i)
+            for(int  i=0; i<_polygon.Length-1; ++i)
+            {
+                _lineContact.A = _polygon[i] + offset;
+                _lineContact.B = _polygon[i + 1] + offset;
+
+                //Vector2 raycast = moveVector * 2f;
+                Vector2 raycast = _raycast;
+
+                //if (Collision2D.LineSegment(_lineContact.A, _lineContact.B, _pos - _raycast, _pos + _raycast))
+                if (Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - raycast, _pos + raycast), out isIntersect) != Vector2.Zero)
                 {
-                    _lineContact.A = _polygon[i] + offset;
-                    _lineContact.B = _polygon[i + 1] + offset;
-
-                    //Vector2 raycast = Geo.GetVector(angle) * _raycast;
-
-                    //if (Collision2D.LineSegment(_lineContact.A, _lineContact.B, _pos - _raycast, _pos + _raycast))
-                    if (Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - _raycast, _pos + _raycast), out isIntersect) != Vector2.Zero)
-                    {
-                        _pointContact = Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - _raycast, _pos + _raycast), out isIntersect);
-                        //_pointContact = Collision2D.LineLineIntersection(_lineContact.A, _lineContact.B,_pos - _raycast, _pos + _raycast);
-                        _successRaycast = true;
-                        break;
-                    }
+                    _pointContact = Collision2D.SegmentSegmentIntersection(_lineContact, new Line(_pos - raycast, _pos + raycast), out isIntersect);
+                    //_pointContact = Collision2D.LineLineIntersection(_lineContact.A, _lineContact.B,_pos - _raycast, _pos + _raycast);
+                    _successRaycast = true;
+                    break;
                 }
+            }
 
             return _lineContact;
         }
@@ -257,6 +257,8 @@ namespace Proto_00
         {
             _oldStatus = _status;
             _status = status;
+
+            Console.WriteLine($"Status {_oldStatus} --> { _status} ");
         }
 
         public void MoveU()
@@ -483,7 +485,7 @@ namespace Proto_00
                             if (_contactPoints[i]._polygon != null)
                             {
                                 // get polygon[] in the tile where is the contactPoint of the global Tileset
-                                _contactPoints[i].GetLineContact(_contactPoints[i]._offset, _angleMove.X + _angleMove.Y);
+                                _contactPoints[i].GetLineContact(_contactPoints[i]._offset, _finalVector);
 
                                 _contactPoints[i]._isContact =
                                     Collision2D.PointInPolygon(_contactPoints[i]._pos, _contactPoints[i]._polygon, _contactPoints[i]._polygon.Length, _contactPoints[i]._offset) &&
@@ -854,7 +856,7 @@ namespace Proto_00
                     _y += -3f;
 
                     ++_ticAutoUp;
-                    if (_ticAutoUp > _rect.Height / 3)
+                    if (_ticAutoUp > _rect.Height / 4)
                     {
                         _ticAutoUp = 0;
                         _ticAutoMove = 0;
@@ -870,7 +872,8 @@ namespace Proto_00
                     {
                         AUTO_MOVE = false;
                         _directionAutoMove = 0;
-                        Fall();
+                        //Fall();
+                        SetStatus(Status.IS_LAND);
                     }
 
                     if (_directionAutoMove < 0)
