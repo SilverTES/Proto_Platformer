@@ -29,6 +29,8 @@ namespace Proto_00
 
         public static string _pathGamePadSetup = "controllers_Setup.xml";
 
+        public static Sprite _spriteDragon;
+
 
         Window _window = new Window();
         public static FrameCounter _frameCounter = new FrameCounter();
@@ -42,6 +44,7 @@ namespace Proto_00
         static public int _screenH = 1080;
 
         static public SpriteFont _fontMain;
+        static public Texture2D _text_Hero;
 
         public int _finalScreenW = 1920;
         public int _finalScreenH = 1080;
@@ -112,8 +115,20 @@ namespace Proto_00
         protected override void LoadContent()
         {
             _fontMain = Content.Load<SpriteFont>("Font/mainFont");
+            _text_Hero = Content.Load<Texture2D>("Image/hero_test");
 
             _style = new Style() { _font = _fontMain, _color = Style.ColorValue.MakeColor(Color.BlueViolet), _horizontalAlign = Style.HorizontalAlign.Center, _verticalAlign = Style.VerticalAlign.Middle};
+
+
+            //_sprite_Monster0 = TexturePacker.LoadSpriteFromFile(Content, "Content/Animation/Anim_Monster0.xml");
+
+            //_sprite_Monster0.Animation("Idle").SetDuration(2f);
+            //_sprite_Monster0.Animation("Fight").SetLoop(Loops.ONCE); // Slow down walk animation
+
+            _spriteDragon = TexturePacker.LoadSpriteFromFile(Content, "Content/Animation/dragonAnim.xml");
+            _spriteDragon.Animation("stand").SetDuration(2f);
+            _spriteDragon.Animation("stand").SetLoop(Loops.PINGPONG);
+
         }
         protected override void UnloadContent()
         {

@@ -49,7 +49,7 @@
    <property name="passLevel" type="int" value="3"/>
   </properties>
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="24">
+   <object id="2" x="0" y="24">
     <polygon points="0,0 48,24 0,24"/>
    </object>
   </objectgroup>

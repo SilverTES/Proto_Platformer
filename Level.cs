@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Retro2D;
+using System;
 using System.Collections.Generic;
 using TiledSharp;
 
@@ -46,7 +47,54 @@ namespace Proto_00
         float _arenaSizeW = 1920;
         float _arenaSizeH = 1080;
 
-        Camera _camera; 
+        Camera _camera;
+
+        static public List<Point> DrawLine(SpriteBatch batch, int x0, int y0, int x1, int y1, int tileW, int tileH, Color color, Point offset)
+        {
+            List<Point> listTile = new List<Point>();
+
+            int dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+            int dy = Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            int err = (dx > dy ? dx : -dy) / 2, e2;
+
+            int oldMapX = 0;
+            int oldMapY = 0;
+
+            int mapX = 0;
+            int mapY = 0;
+
+            int nbTile = 0;
+
+            for (; ; )
+            {
+                Draw.PutPixel(batch, x0 + offset.X, y0 + offset.Y, color);
+
+                oldMapX = mapX;
+                oldMapY = mapY;
+                
+                mapX = (x0/ tileW) * tileW; 
+                mapY = (y0/ tileH) * tileH;
+
+                if (oldMapX != mapX || oldMapY != mapY)
+                {
+                    listTile.Add(new Point(mapX, mapY));
+
+                    Draw.Rectangle(batch, new Rectangle(mapX + offset.X, mapY + offset.Y, tileW, tileH), color);
+                    Draw.CenterStringXY(batch, Game1._fontMain, nbTile.ToString(), mapX + tileW/2 + offset.X, mapY + tileH/2 + offset.Y, color);
+
+                    ++nbTile;
+                }
+
+
+                if (x0 == x1 && y0 == y1) break;
+                e2 = err;
+                if (e2 > -dx) { err -= dy; x0 += sx; }
+                if (e2 < dy) { err += dx; y0 += sy; }
+            }
+
+
+            return listTile;
+        }
 
         public Level(ContentManager content)
         {
@@ -67,8 +115,6 @@ namespace Proto_00
 
             System.Console.WriteLine("Layer0._map2D = " + _layer0._map2D);
 
-            _hero = (Hero)new Hero(Game1.Player1, _layer0).Init().AppendTo(this);
-            //_hero2 = (Hero)new Hero(Game1.Player2, _layer0._map2D).Init().AppendTo(this);
 
             //System.Console.WriteLine("------> "+_tmxMap.Tilesets[0].Tiles[2].ObjectGroups[0].Objects[0].Points);
 
@@ -79,11 +125,20 @@ namespace Proto_00
             _camera = new Camera();
 
             _camera.SetView(new RectangleF(0, 0, Game1._screenW, Game1._screenH));
-            _camera.SetZone(new RectangleF(0, 0, Game1._screenW / 6, Game1._screenH / 6));
+            _camera.SetZone(new RectangleF(0, 0, Game1._screenW / 20, Game1._screenH / 40));
 
             //_camera.SetLimit(new RectangleF(0, 0, _arenaSizeW, _arenaSizeH));
             _camera.SetLimit(new RectangleF(0, 0, _arenaSizeW, _arenaSizeH));
             _camera.SetPosition(new Vector2(_arenaSizeW / 2 + _layer0._map2D._tileW / 2, _arenaSizeH / 2 + _layer0._map2D._tileH * 2));
+
+
+            //for (int i = 0; i < 400; ++i)
+            //{
+            //    new Enemy0(_layer0).SetPosition(Misc.Rng.Next(80, (int)_arenaSizeW - 80), 80).AppendTo(this);
+            //}
+
+            _hero = (Hero)new Hero(Game1.Player1, _layer0, _mouseLevel).Init().AppendTo(this).SetPosition(80,80);
+            //_hero2 = (Hero)new Hero(Game1.Player2, _layer0._map2D).Init().AppendTo(this);
         }
 
         public void GenerateMap()
@@ -126,13 +181,19 @@ namespace Proto_00
 
             InitChilds();
 
-            _hero.SetX(80).SetY(80);
+            //_hero.SetX(80).SetY(80);
             //_hero2.SetX(Position.CENTER).SetY(200);
 
             Game1._camera._position.X = Game1._screenW / 2;
             Game1._camera._position.Y = Game1._screenH / 2;
             Game1._camera.Rotation = 0f;
             Game1._camera.Zoom = 1f;
+
+
+            foreach(var enemy in GroupOf(UID.Get<Enemy0>()))
+            {
+                enemy.SetPosition(Misc.Rng.Next(80, (int)_arenaSizeW - 80), 80);
+            }
 
             return base.Init();
         }
@@ -146,7 +207,7 @@ namespace Proto_00
                 _camera.SetLimit(new RectangleF(1920-48, 0, 640, _arenaSizeH));
 
 
-            _camera.Update(_hero._x, _hero._y, 10);
+            _camera.Update(_hero._x, _hero._y, 10, 10);
             SetPosition(_camera.X, _camera.Y);
 
             _mouseLevel.Update(Game1._relMouseX, Game1._relMouseY, Game1._mouseState.LeftButton == ButtonState.Pressed ? 1 : 0, Game1._mouseState.ScrollWheelValue, (int)-_camera.X, (int)-_camera.Y);
@@ -192,11 +253,14 @@ namespace Proto_00
 
         public override Node Render(SpriteBatch batch)
         {
-            Draw.Grid(batch, _camera.X, _camera.Y, _layer0._map2D._mapW * _layer0._map2D._tileW, _layer0._map2D._mapH * _layer0._map2D._tileH, _layer0._map2D._tileW, _layer0._map2D._tileH, Color.Red * .6f);
+            batch.GraphicsDevice.Clear(new Color(0, 20, 20));
+
+            Draw.Grid(batch, _camera.X, _camera.Y, _layer0._map2D._mapW * _layer0._map2D._tileW, _layer0._map2D._mapH * _layer0._map2D._tileH, _layer0._map2D._tileW, _layer0._map2D._tileH, Color.Green * .6f);
 
             _tileMap2D.Render(batch, _layer0, Color.White, (int)_camera.X, (int)_camera.Y, 1f, false);
 
-            
+            //SuperCoverLine(batch, new Point((int)_hero._x, (int)_hero._y), new Point(_hero.MapX, _hero.MapY), new Point(_mouseMapX, _mouseMapY), _layer0._map2D._tileW, _layer0._map2D._tileH, Color.BlueViolet);
+
             // Debug
             //_tileMap2D.RenderPolygonCollision(batch, _layer0, Color.MonoGameOrange, 1f, (int)_camera.X, (int)_camera.Y, 2f, default, 2f);
 

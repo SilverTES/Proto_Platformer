@@ -47,6 +47,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Enemy0.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Hero.cs" />
     <Compile Include="Level.cs" />
@@ -131,6 +132,9 @@
   <ItemGroup>
     <Content Include="config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Animation\dragonAnim.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@ namespace Proto_00
     public class Hero : MapActor
     {
 
-        bool _showContactPoint = true;
+        bool _showContactPoint = false;
 
         public bool IS_CONTROLL = true;
 
@@ -63,31 +63,44 @@ namespace Proto_00
         bool ON_B_JUMP = false;
 
         Player _player;
+        Input.Mouse _mouse;
 
-        public Hero(Player player, TileMapLayer tileMapLayer) : base(tileMapLayer)
+        Sprite _sprite;
+
+        int _direction = 1;
+
+        public Hero(Player player, TileMapLayer tileMapLayer, Input.Mouse mouse) : base(tileMapLayer)
         {
+
+            _type = UID.Get<Hero>();
+
             _player = player;
+            _mouse = mouse;
 
             SetSize(24, 32);
             SetPivot(12, 16);
 
             // Create Collide Point of Hero
-            AddPoint((int)HotPoints.UL, new Vector2(-10, -20));
-            AddPoint((int)HotPoints.UR, new Vector2(+10, -20));
+            AddPoint((int)HSpots.UL, new Vector2(-10, -20));
+            AddPoint((int)HSpots.UR, new Vector2(+10, -20));
 
-            AddPoint((int)HotPoints.DL, new Vector2(-10, +20));
-            AddPoint((int)HotPoints.DR, new Vector2(+10, +20));
+            AddPoint((int)HSpots.DL, new Vector2(-10, +20));
+            AddPoint((int)HSpots.DR, new Vector2(+10, +20));
 
-            AddPoint((int)HotPoints.LU, new Vector2(-16, -8));
-            AddPoint((int)HotPoints.LD, new Vector2(-16, +6));
+            AddPoint((int)HSpots.LU, new Vector2(-16, -8));
+            AddPoint((int)HSpots.LD, new Vector2(-16, +6));
 
-            AddPoint((int)HotPoints.RU, new Vector2(+16, -8));
-            AddPoint((int)HotPoints.RD, new Vector2(+16, +6));
+            AddPoint((int)HSpots.RU, new Vector2(+16, -8));
+            AddPoint((int)HSpots.RD, new Vector2(+16, +6));
 
 
             // Collide Point for Grip
-            AddPoint((int)HotPoints.EL, new Vector2(-16, -16));
-            AddPoint((int)HotPoints.ER, new Vector2(+16, -16));
+            AddPoint((int)HSpots.EL, new Vector2(-16, -16));
+            AddPoint((int)HSpots.ER, new Vector2(+16, -16));
+
+            _sprite = Game1._spriteDragon.Clone();
+            _sprite.Start("stand", 1, 0);
+
 
         }
 
@@ -99,20 +112,20 @@ namespace Proto_00
 
 
             // Init Raycast vector for each contactPoints
-            _contactPoints[(int)HotPoints.UL].SetRayCast(0, -_speedMax.Y);
-            _contactPoints[(int)HotPoints.UR].SetRayCast(0, -_speedMax.Y);
+            _cPoints[(int)HSpots.UL].SetRayCast(0, -_speedMax.Y);
+            _cPoints[(int)HSpots.UR].SetRayCast(0, -_speedMax.Y);
 
-            _contactPoints[(int)HotPoints.DL].SetRayCast(0, +_speedMax.Y);
-            _contactPoints[(int)HotPoints.DR].SetRayCast(0, +_speedMax.Y);
+            _cPoints[(int)HSpots.DL].SetRayCast(0, +_speedMax.Y);
+            _cPoints[(int)HSpots.DR].SetRayCast(0, +_speedMax.Y);
 
-            _contactPoints[(int)HotPoints.LU].SetRayCast(-_speedMax.X*4, 0);
-            _contactPoints[(int)HotPoints.LD].SetRayCast(-_speedMax.X*4, 0);
+            _cPoints[(int)HSpots.LU].SetRayCast(-_speedMax.X*4, 0);
+            _cPoints[(int)HSpots.LD].SetRayCast(-_speedMax.X*4, 0);
 
-            _contactPoints[(int)HotPoints.RU].SetRayCast(+_speedMax.X*4, 0);
-            _contactPoints[(int)HotPoints.RD].SetRayCast(+_speedMax.X*4, 0);
+            _cPoints[(int)HSpots.RU].SetRayCast(+_speedMax.X*4, 0);
+            _cPoints[(int)HSpots.RD].SetRayCast(+_speedMax.X*4, 0);
 
-            _contactPoints[(int)HotPoints.EL].SetRayCast(-_speedMax.X*4, 0);
-            _contactPoints[(int)HotPoints.ER].SetRayCast(+_speedMax.X*4, 0);
+            _cPoints[(int)HSpots.EL].SetRayCast(-_speedMax.X*4, 0);
+            _cPoints[(int)HSpots.ER].SetRayCast(+_speedMax.X*4, 0);
 
             //_isLand = true;
 
@@ -123,23 +136,28 @@ namespace Proto_00
 
         public override Node Update(GameTime gameTime)
         {
+            _sprite.Update();
 
             #region Button Events
 
             // Manage Button Status
 
-            IS_B_UP = _player.GetButton((int)SNES.BUTTONS.UP) != 0 && IS_CONTROLL;
-            IS_B_DOWN = _player.GetButton((int)SNES.BUTTONS.DOWN) != 0 && IS_CONTROLL;
-            IS_B_LEFT = _player.GetButton((int)SNES.BUTTONS.LEFT) != 0 && IS_CONTROLL;
-            IS_B_RIGHT = _player.GetButton((int)SNES.BUTTONS.RIGHT) != 0 && IS_CONTROLL;
+            if (IS_CONTROLL)
+            {
+                IS_B_UP = _player.GetButton((int)SNES.BUTTONS.UP) != 0;
+                IS_B_DOWN = _player.GetButton((int)SNES.BUTTONS.DOWN) != 0;
+                IS_B_LEFT = _player.GetButton((int)SNES.BUTTONS.LEFT) != 0;
+                IS_B_RIGHT = _player.GetButton((int)SNES.BUTTONS.RIGHT) != 0;
 
-            IS_B_L = _player.GetButton((int)SNES.BUTTONS.L) != 0 && IS_CONTROLL;
-            IS_B_R = _player.GetButton((int)SNES.BUTTONS.R) != 0 && IS_CONTROLL;
+                IS_B_L = _player.GetButton((int)SNES.BUTTONS.L) != 0;
+                IS_B_R = _player.GetButton((int)SNES.BUTTONS.R) != 0;
 
-            IS_B_A = _player.GetButton((int)SNES.BUTTONS.A) != 0 && IS_CONTROLL;
-            IS_B_B = _player.GetButton((int)SNES.BUTTONS.B) != 0 && IS_CONTROLL;
-            IS_B_X = _player.GetButton((int)SNES.BUTTONS.X) != 0 && IS_CONTROLL;
-            IS_B_Y = _player.GetButton((int)SNES.BUTTONS.Y) != 0 && IS_CONTROLL;
+                IS_B_A = _player.GetButton((int)SNES.BUTTONS.A) != 0;
+                IS_B_B = _player.GetButton((int)SNES.BUTTONS.B) != 0;
+                IS_B_X = _player.GetButton((int)SNES.BUTTONS.X) != 0;
+                IS_B_Y = _player.GetButton((int)SNES.BUTTONS.Y) != 0;
+            }
+
 
 
             // Manage Button Trigger
@@ -176,11 +194,13 @@ namespace Proto_00
             // Movement Left Right
             if (IS_B_LEFT) 
             { 
-                MoveL(); 
+                MoveL();
+                _direction = -1;
             }
             if (IS_B_RIGHT)
-            { 
+            {
                 MoveR();
+                _direction = 1;
             }
 
             // Movement Jump up & down
@@ -214,10 +234,16 @@ namespace Proto_00
             //Draw.FillRectangleCentered(batch, AbsXY, new Vector2(24,32), Color.CadetBlue, 0f);
             //Draw.FillRectangleCentered(batch, AbsXY + new Vector2(0,14), new Vector2(18,12), Color.CadetBlue, 0f);
 
-            Draw.FillRectangle(batch, AbsRect, Color.CadetBlue);
             //Draw.Polygon(batch, _hotPoints.Values.ToArray(), Color.RoyalBlue, 2f, XY + _parent.AbsXY);
-            Draw.Circle(batch, AbsXY, 8, 6, Color.Yellow, 2f);
-            Draw.Rectangle(batch, AbsRect, Color.RoyalBlue, 2f);
+            Draw.FillRectangle(batch, AbsRect, Color.CadetBlue);
+            //Draw.Circle(batch, AbsXY, 8, 6, Color.Yellow, 2f);
+            Draw.Rectangle(batch, AbsRect, Color.Gray, 2f);
+
+            bool flipX = _direction < 0 ? true : false;
+
+            //_sprite.Render(batch, AbsX, AbsY + _rect.Height / 2, Color.White, 1f, 1f, 0, 0, 0, flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, flipX);
+
+            //batch.Draw(Game1._text_Hero, AbsXY - new Vector2(Game1._text_Hero.Width / 2, Game1._text_Hero.Height/2 + 14), Color.White);
 
             //Draw.Line(batch, AbsXY, AbsXY + new Vector2(0, _tileMapLayer._map2D._tileH), Color.Red, 3);
 
@@ -226,9 +252,9 @@ namespace Proto_00
             // Debug : Draw _collideP
             if (_showContactPoint)
             {
-                for (int i=0; i< _contactPoints.Length; ++i)
+                for (int i=0; i< _cPoints.Length; ++i)
                 {
-                    if (null != _contactPoints[i])
+                    if (null != _cPoints[i])
                     {
 
                         //if (i==(int)HotPoints.RU || i==(int)HotPoints.RD)
@@ -239,36 +265,36 @@ namespace Proto_00
                         // Raycast line
                         //Vector2 raycast = _finalVector * 2f;
                         //Draw.Line(batch, _contactPoints[i]._pos - raycast + _parent.AbsXY, _contactPoints[i]._pos + raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
-                        Draw.Line(batch, _contactPoints[i]._pos - _contactPoints[i]._raycast + _parent.AbsXY, _contactPoints[i]._pos + _contactPoints[i]._raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
+                        Draw.Line(batch, _cPoints[i]._pos - _cPoints[i]._raycast + _parent.AbsXY, _cPoints[i]._pos + _cPoints[i]._raycast + _parent.AbsXY, Color.MediumVioletRed, 1f);
 
-                        if (_contactPoints[i]._isContact)
+                        if (_cPoints[i]._isContact)
                         {
                             color = Color.Red;
 
                             // Polygon of contact point
-                            Draw.PolyLine(batch, _contactPoints[i]._polygon, Color.White, 1f, _parent.AbsXY + _contactPoints[i]._offset);
+                            Draw.PolyLine(batch, _cPoints[i]._polygon, Color.White, 1f, _parent.AbsXY + _cPoints[i]._offset);
 
-                            Line line = _contactPoints[i]._lineContact;
+                            Line line = _cPoints[i]._lineContact;
                             
                             // Line of contact point
                             Draw.Line(batch, line.A + _parent.AbsXY, line.B + _parent.AbsXY, Color.Aqua, 3f);
 
                             // Point of intersect raycast line & line Contact
-                            Draw.Point(batch, _contactPoints[i]._pointContact + _parent.AbsXY, 3f, Color.ForestGreen);
+                            Draw.Point(batch, _cPoints[i]._pointContact + _parent.AbsXY, 3f, Color.ForestGreen);
                             
                             // Name of the point contact
 
                             
                         }
 
-                        if (i==(int)HotPoints.EL)
+                        if (i==(int)HSpots.EL)
                         {
-                            Draw.Line(batch, _contactPoints[i]._firstline.A + _parent.AbsXY, _contactPoints[i]._firstline.B + _parent.AbsXY, Color.Magenta, 2f);
-                            Draw.TopCenterString(batch, Game1._fontMain, _contactPoints[i]._pos.Y.ToString("0")+","+_contactPoints[i]._pos.Y.ToString("0") , _contactPoints[i]._pos.X + _parent.AbsX, _contactPoints[i]._pos.Y + _parent.AbsY, Color.White);
+                            Draw.Line(batch, _cPoints[i]._firstline.A + _parent.AbsXY, _cPoints[i]._firstline.B + _parent.AbsXY, Color.Magenta, 2f);
+                            Draw.TopCenterString(batch, Game1._fontMain, _cPoints[i]._pos.Y.ToString("0")+","+_cPoints[i]._pos.Y.ToString("0") , _cPoints[i]._pos.X + _parent.AbsX, _cPoints[i]._pos.Y + _parent.AbsY, Color.White);
                         }
 
                         // Contact point
-                        Draw.Point(batch, _contactPoints[i]._pos + _parent.AbsXY, 1, color);
+                        Draw.Point(batch, _cPoints[i]._pos + _parent.AbsXY, 1, color);
                     }
 
 
@@ -299,11 +325,18 @@ namespace Proto_00
 
                 Draw.TopCenterString(batch, Game1._fontMain, $"{ _sumVector.X.ToString("0.0")}|{ _sumVector.Y.ToString("0.0")}", AbsX, AbsY + 64, Color.Yellow);
                 Draw.TopCenterString(batch, Game1._fontMain, $"{ _velocity.X.ToString("0.0")}|{ _velocity.Y.ToString("0.0")}", AbsX, AbsY + 80, Color.MonoGameOrange);
-            
+
+
+
+                // Ddebug Raycast !            
+                Draw.Rectangle(batch, new RectangleF(_mapPosX * _tileW + _parent.AbsX, _mapPosY * _tileH + _parent.AbsY, _tileW, _tileH), Color.Yellow);
+                Level.DrawLine(batch, (int)_x, (int)_y, _mouse.AbsX, _mouse.AbsY, _tileW, _tileH, Color.OrangeRed, new Point(_parent.AbsX, _parent.AbsY));
             }
 
             if (_status == Status.IS_GRAB)
                 Draw.Point(batch, _ledgeGrip + _parent.AbsXY, 4f, Color.MonoGameOrange);
+
+            //Draw.CenterStringXY(batch, Game1._fontMain, $"{_pointLandCollision_L.Y.ToString("0")}:{_pointLandCollision_R.Y.ToString("0")}", AbsX, AbsY + 32, Color.Ivory);
 
 
             return base.Render(batch);

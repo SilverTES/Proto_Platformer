@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker https://www.codeandweb.com/texturepacker -->
+<!-- $TexturePacker:SmartUpdate:3b5d9f1c5e0a92e1e02d3362b8e30316:141ad38677f5020f850de28cc7d885eb:ecb080063d5c03c3fbab5fcb6330604c$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+pX => x pos of the pivot point (relative to sprite width)
+pY => y pos of the pivot point (relative to sprite height)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+with polygon mode enabled:
+vertices   => points in sprite coordinate system (x0,y0,x1,y1,x2,y2, ...)
+verticesUV => points in sheet coordinate system (x0,y0,x1,y1,x2,y2, ...)
+triangles  => sprite triangulation, 3 vertex indices per triangle
+-->
+<TextureAtlas imagePath="dragonAnim.png" width="2024" height="256">
+    <sprite n="stand000" x="526" y="130" w="131" h="124" pX="0.603053" pY="0.935484"/>
+    <sprite n="stand001" x="659" y="130" w="131" h="124" pX="0.603053" pY="0.935484"/>
+    <sprite n="stand002" x="792" y="130" w="131" h="124" pX="0.603053" pY="0.935484"/>
+    <sprite n="stand003" x="925" y="130" w="131" h="124" pX="0.603053" pY="0.935484"/>
+    <sprite n="stand004" x="1058" y="130" w="131" h="124" pX="0.603053" pY="0.935484"/>
+    <sprite n="stand005" x="1856" y="130" w="132" h="124" pX="0.598485" pY="0.935484"/>
+    <sprite n="stand006" x="1191" y="130" w="131" h="124" pX="0.59542" pY="0.935484"/>
+    <sprite n="stand007" x="1324" y="130" w="131" h="124" pX="0.59542" pY="0.935484"/>
+    <sprite n="stand008" x="1457" y="130" w="131" h="124" pX="0.59542" pY="0.935484"/>
+    <sprite n="stand009" x="394" y="130" w="130" h="125" pX="0.592308" pY="0.936"/>
+    <sprite n="stand010" x="1" y="130" w="129" h="125" pX="0.589147" pY="0.936"/>
+    <sprite n="stand011" x="1895" y="1" w="128" h="126" pX="0.585938" pY="0.936508"/>
+    <sprite n="stand012" x="1637" y="1" w="127" h="126" pX="0.582677" pY="0.936508"/>
+    <sprite n="stand013" x="1382" y="1" w="125" h="127" pX="0.576" pY="0.937008"/>
+    <sprite n="stand014" x="500" y="1" w="124" h="127" pX="0.572581" pY="0.937008"/>
+    <sprite n="stand015" x="1" y="1" w="122" h="127" pX="0.565574" pY="0.937008"/>
+    <sprite n="stand016" x="125" y="1" w="123" h="127" pX="0.569106" pY="0.937008"/>
+    <sprite n="stand017" x="626" y="1" w="124" h="127" pX="0.572581" pY="0.937008"/>
+    <sprite n="stand018" x="250" y="1" w="123" h="127" pX="0.569106" pY="0.937008"/>
+    <sprite n="stand019" x="375" y="1" w="123" h="127" pX="0.569106" pY="0.937008"/>
+    <sprite n="stand020" x="752" y="1" w="124" h="127" pX="0.572581" pY="0.937008"/>
+    <sprite n="stand021" x="878" y="1" w="124" h="126" pX="0.572581" pY="0.936508"/>
+    <sprite n="stand022" x="1004" y="1" w="124" h="126" pX="0.580645" pY="0.936508"/>
+    <sprite n="stand023" x="1130" y="1" w="124" h="126" pX="0.580645" pY="0.936508"/>
+    <sprite n="stand024" x="1256" y="1" w="124" h="126" pX="0.580645" pY="0.936508"/>
+    <sprite n="stand025" x="1509" y="1" w="126" h="125" pX="0.587302" pY="0.936"/>
+    <sprite n="stand026" x="1766" y="1" w="127" h="126" pX="0.590551" pY="0.936508"/>
+    <sprite n="stand027" x="132" y="130" w="129" h="125" pX="0.596899" pY="0.936"/>
+    <sprite n="stand028" x="263" y="130" w="129" h="125" pX="0.596899" pY="0.936"/>
+    <sprite n="stand029" x="1590" y="130" w="131" h="125" pX="0.603053" pY="0.936"/>
+    <sprite n="stand030" x="1723" y="130" w="131" h="124" pX="0.603053" pY="0.935484"/>
+</TextureAtlas>

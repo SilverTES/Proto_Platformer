@@ -17,7 +17,7 @@ namespace Proto_00
         IS_CLIMB,
     }
 
-    public enum HotPoints
+    public enum HSpots
     {
         UL, UR, // Collide TOP
         DL, DR, // Collide BOTTOM
@@ -93,7 +93,7 @@ namespace Proto_00
     {
         #region Attributes
 
-        protected ContactPoint[] _contactPoints;
+        protected ContactPoint[] _cPoints;
 
         protected Vector2 _oldPosition = new Vector2();
 
@@ -105,10 +105,12 @@ namespace Proto_00
         protected Vector2 _deceleration = new Vector2(.6f , 1f);
 
         protected Vector2 _velocity = new Vector2();
+        public Vector2 Velocity => _velocity;
 
         protected Vector2 _sumVector = new Vector2();
 
         protected Vector2 _finalVector = new Vector2();
+        public Vector2 FinalVector => _finalVector;
 
         protected bool _isMove = false;
         protected bool _onMove = false;
@@ -165,6 +167,10 @@ namespace Proto_00
         protected float _landY_R;
         protected float _landY;
 
+        protected float _contactX;
+        protected float _contactY;
+        protected ContactPoint _contactPointDown;
+
         protected float _topY_L;
         protected float _topY_R;
         protected float _topY;
@@ -190,6 +196,9 @@ namespace Proto_00
 
         public bool CAN_GRAB_L = false;
         public bool CAN_GRAB_R = false;
+
+        public bool IS_GRAB_L = false;
+        public bool IS_GRAB_R = false;
 
         public bool CAN_CLIMB_L = false;
         public bool CAN_CLIMB_R = false;
@@ -227,30 +236,30 @@ namespace Proto_00
         public int PASS_LEVEL = 2;
 
         // Collide points
-        public Dictionary<int, Vector2> _hotPoints = new Dictionary<int, Vector2>();
+        public Dictionary<int, Vector2> _hSpots = new Dictionary<int, Vector2>();
 
         #endregion
 
         public MapActor(TileMapLayer tileMapLayer) : base(tileMapLayer)
         {
-            _contactPoints = new ContactPoint[Enum.GetNames(typeof(HotPoints)).Length];
+            _cPoints = new ContactPoint[Enum.GetNames(typeof(HSpots)).Length];
 
-            for (int i=0; i<_contactPoints.Length; ++i)
+            for (int i=0; i<_cPoints.Length; ++i)
             {
-                _contactPoints[i] = new ContactPoint();
+                _cPoints[i] = new ContactPoint();
             }
 
         }
 
         public void AddPoint(int position, Vector2 collideP)
         {
-            _hotPoints[position] = collideP;
+            _hSpots[position] = collideP;
 
         }
         public Vector2 GetPoint(int position)
         {
-            if (_hotPoints.ContainsKey(position))
-                return _hotPoints[position];
+            if (_hSpots.ContainsKey(position))
+                return _hSpots[position];
 
             return Vector2.Zero;
         }
@@ -259,7 +268,7 @@ namespace Proto_00
             _oldStatus = _status;
             _status = status;
 
-            Console.WriteLine($"Status {_oldStatus} --> { _status} ");
+            //Console.WriteLine($"Status {_oldStatus} --> { _status} ");
         }
 
         public void MoveU()
@@ -278,6 +287,8 @@ namespace Proto_00
             {
                 _isMove = true;
 
+                //_angleMove.X = Geo.RAD_L;
+
                 if (_status != Status.IS_LAND)
                     _angleMove.X = Geo.RAD_L;
                 else
@@ -294,6 +305,8 @@ namespace Proto_00
             if (CAN_MOVE_RIGHT && _status != Status.IS_GRAB)
             {
                 _isMove = true;
+
+                //_angleMove.X = Geo.RAD_R;
 
                 if (_status != Status.IS_LAND)
                     _angleMove.X = Geo.RAD_R;
@@ -341,7 +354,7 @@ namespace Proto_00
             }
             else if (MOVE_JUMP) // Wall Jump
             {
-                if (((CAN_WALL_JUMP_R && !_contactPoints[(int)HotPoints.ER]._isContact) || (CAN_WALL_JUMP_L && !_contactPoints[(int)HotPoints.EL]._isContact)) && !_isPush)
+                if (((CAN_WALL_JUMP_R && !_cPoints[(int)HSpots.ER]._isContact) || (CAN_WALL_JUMP_L && !_cPoints[(int)HSpots.EL]._isContact)) && !_isPush)
                 {
                     
                     Console.WriteLine("Wall Jump !");
@@ -388,13 +401,16 @@ namespace Proto_00
 
             return true;
         }
-        public bool Grab()
+        public bool Grab(ref bool isGrab)
         {
-            CAN_GRAB_L = false;
-            CAN_GRAB_R = false;
 
             if (_status == Status.IS_FALL) // || _status == Status.IS_JUMP)
             {
+                isGrab = true;
+
+                //CAN_GRAB_L = false;
+                //CAN_GRAB_R = false;
+
                 SetStatus(Status.IS_GRAB);
                 _ticGrab = 0;
                 _onGrab = true;
@@ -411,8 +427,12 @@ namespace Proto_00
                 CAN_CLIMB_L = false;
                 CAN_CLIMB_R = false;
 
+                IS_GRAB_L = false;
+                IS_GRAB_R = false;
+
                 Console.WriteLine("Climb()");
                 SetStatus(Status.IS_CLIMB); 
+
                 _onClimb = true; 
                 _readyToClimb = false; 
                 AUTO_UP = true; 
@@ -483,45 +503,45 @@ namespace Proto_00
 
             #region Collisions Test
 
-            if (_hotPoints.Count > 0)
+            if (_hSpots.Count > 0)
             {
 
                 // Reset all collide point to false !
-                for (int i = 0; i < _hotPoints.Count; i++)
+                for (int i = 0; i < _hSpots.Count; i++)
                 {
-                    _contactPoints[i]._isContact = false;
+                    _cPoints[i]._isContact = false;
 
-                    _contactPoints[i]._hotPoint = _hotPoints[i];
+                    _cPoints[i]._hotPoint = _hSpots[i];
 
-                    _contactPoints[i]._pos = XY + _hotPoints[i] + _finalVector;
+                    _cPoints[i]._pos = XY + _hSpots[i] + _finalVector;
 
-                    _contactPoints[i]._mapX = (int)(_contactPoints[i]._pos.X / _tileW);
-                    _contactPoints[i]._mapY = (int)(_contactPoints[i]._pos.Y / _tileH);
+                    _cPoints[i]._mapX = (int)(_cPoints[i]._pos.X / _tileW);
+                    _cPoints[i]._mapY = (int)(_cPoints[i]._pos.Y / _tileH);
 
-                    _contactPoints[i]._offset = new Vector2(_contactPoints[i]._mapX * _tileW, _contactPoints[i]._mapY * _tileH);
+                    _cPoints[i]._offset = new Vector2(_cPoints[i]._mapX * _tileW, _cPoints[i]._mapY * _tileH);
 
-                    _contactPoints[i]._tile = _map2D.Get(_contactPoints[i]._mapX, _contactPoints[i]._mapY);
+                    _cPoints[i]._tile = _map2D.Get(_cPoints[i]._mapX, _cPoints[i]._mapY);
 
                     //_CollidePointInPolygon = false;
 
-                    if (null != _contactPoints[i]._tile)
+                    if (null != _cPoints[i]._tile)
                     {
                         // check the tileset if collide in polygon
-                        if (_tileMapLayer._tileSets.ContainsKey(_contactPoints[i]._tile._id))
+                        if (_tileMapLayer._tileSets.ContainsKey(_cPoints[i]._tile._id))
                         {
-                            TileSet tileset = _tileMapLayer._tileSets[_contactPoints[i]._tile._id];
+                            TileSet tileset = _tileMapLayer._tileSets[_cPoints[i]._tile._id];
 
-                            _contactPoints[i]._polygon = tileset._polygonCollision;
+                            _cPoints[i]._polygon = tileset._polygonCollision;
                             
-                            if (_contactPoints[i]._polygon != null)
+                            if (_cPoints[i]._polygon != null)
                             {
                                 // get polygon[] in the tile where is the contactPoint of the global Tileset
-                                _contactPoints[i].GetLineContact(_contactPoints[i]._offset, _contactPoints[i]._polygon);
+                                _cPoints[i].GetLineContact(_cPoints[i]._offset, _cPoints[i]._polygon);
 
-                                _contactPoints[i]._isContact =
-                                    Collision2D.PointInPolygon(_contactPoints[i]._pos, _contactPoints[i]._polygon, _contactPoints[i]._polygon.Length, _contactPoints[i]._offset) &&
-                                    _contactPoints[i]._tile._isCollidable &&
-                                    _contactPoints[i]._tile._passLevel > PASS_LEVEL; // && _contactPoints[i]._successRaycast;
+                                _cPoints[i]._isContact =
+                                    Collision2D.PointInPolygon(_cPoints[i]._pos, _cPoints[i]._polygon, _cPoints[i]._polygon.Length, _cPoints[i]._offset) &&
+                                    _cPoints[i]._tile._isCollidable &&
+                                    _cPoints[i]._tile._passLevel > PASS_LEVEL; // && _contactPoints[i]._successRaycast;
 
                             }
 
@@ -533,20 +553,20 @@ namespace Proto_00
 
                 // Up Top
                 #region Contact : UP / TOP 
-                if (_contactPoints[(int)HotPoints.UL]._isContact && _status == Status.IS_JUMP)
+                if (_cPoints[(int)HSpots.UL]._isContact && _status == Status.IS_JUMP)
                 {
                     CAN_MOVE_UP = false;
                     //_topY = _topY_L = _contactPoints[(int)HotPoints.UL]._mapY * _tileH + _tileH + _rect.Height / 2 + 2;
-                    _topY = _topY_L = _contactPoints[(int)HotPoints.UL]._pointContact.Y + _rect.Height / 2 + 2;
+                    _topY = _topY_L = _cPoints[(int)HSpots.UL]._pointContact.Y + _rect.Height / 2 + 2;
                 }
-                if (_contactPoints[(int)HotPoints.UR]._isContact && _status == Status.IS_JUMP)
+                if (_cPoints[(int)HSpots.UR]._isContact && _status == Status.IS_JUMP)
                 {
                     CAN_MOVE_UP = false;
                     //_topY = _topY_R = _contactPoints[(int)HotPoints.UR]._mapY * _tileH + _tileH + _rect.Height / 2 + 2;
-                    _topY = _topY_R = _contactPoints[(int)HotPoints.UR]._pointContact.Y + _rect.Height / 2 + 2;
+                    _topY = _topY_R = _cPoints[(int)HSpots.UR]._pointContact.Y + _rect.Height / 2 + 2;
                 }
 
-                if (_contactPoints[(int)HotPoints.UL]._isContact && _contactPoints[(int)HotPoints.UR]._isContact && _status == Status.IS_JUMP)
+                if (_cPoints[(int)HSpots.UL]._isContact && _cPoints[(int)HSpots.UR]._isContact && _status == Status.IS_JUMP)
                 {
                     if (_topY_L > _topY_R)
                         _topY = _topY_L;
@@ -556,33 +576,33 @@ namespace Proto_00
                 #endregion
 
                 #region Contact : DOWN / BOTTOM
-                if (_contactPoints[(int)HotPoints.DL]._isContact)
+                if (_cPoints[(int)HSpots.DL]._isContact)
                 {
                     CAN_MOVE_DOWN = false;
 
-                    _landLineA = _landLineA_L =_contactPoints[(int)HotPoints.DL]._polygon[0] + _contactPoints[(int)HotPoints.DL]._offset;
-                    _landLineB = _landLineB_L = _contactPoints[(int)HotPoints.DL]._polygon[1] + _contactPoints[(int)HotPoints.DL]._offset;
+                    _landLineA = _landLineA_L =_cPoints[(int)HSpots.DL]._polygon[0] + _cPoints[(int)HSpots.DL]._offset;
+                    _landLineB = _landLineB_L = _cPoints[(int)HSpots.DL]._polygon[1] + _cPoints[(int)HSpots.DL]._offset;
 
                     _landRadian = _landRadian_L = Geo.GetRadian(_landLineA, _landLineB);
 
                     //_pointLandCollision = _pointLandCollision_L = Collision2D.LineLineIntersection(_landLineA, _landLineB, _contactPoints[(int)HotPoints.DL]._pos, _contactPoints[(int)HotPoints.DL]._pos + _contactPoints[(int)HotPoints.DL]._raycast);
-                    _pointLandCollision = _pointLandCollision_L = _contactPoints[(int)HotPoints.DL]._pointContact;
+                    _pointLandCollision = _pointLandCollision_L = _cPoints[(int)HSpots.DL]._pointContact;
 
                     _landY = _landY_L = _pointLandCollision_L.Y - _rect.Height / 2 - 2;
                 }
 
 
-                if (_contactPoints[(int)HotPoints.DR]._isContact)
+                if (_cPoints[(int)HSpots.DR]._isContact)
                 {
                     CAN_MOVE_DOWN = false;
 
-                    _landLineA = _landLineA_R =_contactPoints[(int)HotPoints.DR]._polygon[0] + _contactPoints[(int)HotPoints.DR]._offset;
-                    _landLineB = _landLineB_R = _contactPoints[(int)HotPoints.DR]._polygon[1] + _contactPoints[(int)HotPoints.DR]._offset;
+                    _landLineA = _landLineA_R =_cPoints[(int)HSpots.DR]._polygon[0] + _cPoints[(int)HSpots.DR]._offset;
+                    _landLineB = _landLineB_R = _cPoints[(int)HSpots.DR]._polygon[1] + _cPoints[(int)HSpots.DR]._offset;
 
                     _landRadian = _landRadian_R = Geo.GetRadian(_landLineA, _landLineB);
 
                     //_pointLandCollision = _pointLandCollision_R = Collision2D.LineLineIntersection(_landLineA, _landLineB, _contactPoints[(int)HotPoints.DR]._pos, _contactPoints[(int)HotPoints.DR]._pos + _contactPoints[(int)HotPoints.DR]._raycast);
-                    _pointLandCollision = _pointLandCollision_R = _contactPoints[(int)HotPoints.DR]._pointContact;
+                    _pointLandCollision = _pointLandCollision_R = _cPoints[(int)HSpots.DR]._pointContact;
 
                     _landY = _landY_R = _pointLandCollision_R.Y - _rect.Height / 2 - 2;
                 }
@@ -591,72 +611,117 @@ namespace Proto_00
                 #region Contact : LEFT & RIGHT
                 // Limit Side Move
                 // LEFT
-                if (_contactPoints[(int)HotPoints.LU]._isContact && MOVE_LEFT)
+                if (_cPoints[(int)HSpots.LU]._isContact && MOVE_LEFT)
                 {
                     CAN_MOVE_LEFT = false;
                     //_sideL = _contactPoints[(int)HotPoints.LU]._mapX * _tileW + _tileW + _rect.Width / 2 + 2;
-                    _sideL = _contactPoints[(int)HotPoints.LU]._pointContact.X + _rect.Width / 2 + 2;
+                    _sideL = _cPoints[(int)HSpots.LU]._pointContact.X + _rect.Width / 2 + 2;
                 }
-                if (_contactPoints[(int)HotPoints.LD]._isContact && MOVE_LEFT)
+                if (_cPoints[(int)HSpots.LD]._isContact && MOVE_LEFT)
                 {
                     CAN_MOVE_LEFT = false;
                     //_sideL = _contactPoints[(int)HotPoints.LD]._mapX * _tileW + _tileW + _rect.Width / 2 + 2;
-                    _sideL = _contactPoints[(int)HotPoints.LD]._pointContact.X + _rect.Width / 2 + 2;
+                    _sideL = _cPoints[(int)HSpots.LD]._pointContact.X + _rect.Width / 2 + 2;
                 }
                 // RIGHT
-                if (_contactPoints[(int)HotPoints.RU]._isContact && MOVE_RIGHT)
+                if (_cPoints[(int)HSpots.RU]._isContact && MOVE_RIGHT)
                 {
                     CAN_MOVE_RIGHT = false;
                     //_sideR = _contactPoints[(int)HotPoints.RU]._mapX * _tileW - _rect.Width / 2 - 2;
-                    _sideR = _contactPoints[(int)HotPoints.RU]._pointContact.X - _rect.Width / 2 - 2;
+                    _sideR = _cPoints[(int)HSpots.RU]._pointContact.X - _rect.Width / 2 - 2;
                 }
-                if (_contactPoints[(int)HotPoints.RD]._isContact && MOVE_RIGHT)
+                if (_cPoints[(int)HSpots.RD]._isContact && MOVE_RIGHT)
                 {
                     CAN_MOVE_RIGHT = false;
                     //_sideR = _contactPoints[(int)HotPoints.RD]._mapX * _tileW - _rect.Width / 2 - 2;
-                    _sideR = _contactPoints[(int)HotPoints.RD]._pointContact.X - _rect.Width / 2 - 2;
+                    _sideR = _cPoints[(int)HSpots.RD]._pointContact.X - _rect.Width / 2 - 2;
                 }
 
                 // Type Slope = 3
-                if (!_contactPoints[(int)HotPoints.LU]._isContact && _contactPoints[(int)HotPoints.LU]._tile._type == 3 && MOVE_LEFT) // && _contactPoints[(int)CPoint.DL]._isContact
+                if (_cPoints[(int)HSpots.LU]._tile != null)
+                    if (!_cPoints[(int)HSpots.LU]._isContact && _cPoints[(int)HSpots.LU]._tile._type == 3 && MOVE_LEFT) // && _contactPoints[(int)CPoint.DL]._isContact
+                    {
+                        //CAN_MOVE_DOWN = false;
+
+                        _landLineA = _landLineA_L = _cPoints[(int)HSpots.LU]._polygon[0] + _cPoints[(int)HSpots.LU]._offset;
+                        _landLineB = _landLineB_L = _cPoints[(int)HSpots.LU]._polygon[1] + _cPoints[(int)HSpots.LU]._offset;
+
+                        _landRadian = _landRadian_L = Geo.GetRadian(_landLineA, _landLineB);
+
+                        if (_cPoints[(int)HSpots.DL]._isContact)
+                        {
+                            CAN_MOVE_DOWN = false;
+
+                            _pointLandCollision = _pointLandCollision_L = Collision2D.LineLineIntersection(_landLineA, _landLineB, _cPoints[(int)HSpots.DL]._pos, _cPoints[(int)HSpots.DL]._pos + _cPoints[(int)HSpots.DL]._raycast);
+                            //_pointLandCollision = _pointLandCollision_L = _cPoints[(int)HSpots.DL]._pointContact;
+                            _landY = _landY_L = _pointLandCollision_L.Y - _rect.Height / 2 - 2;
+                        }
+                    }
+
+                if (_cPoints[(int)HSpots.RU]._tile != null)
+                    if (!_cPoints[(int)HSpots.RU]._isContact && _cPoints[(int)HSpots.RU]._tile._type == 3 && MOVE_RIGHT) // && _contactPoints[(int)CPoint.DL]._isContact
+                    {
+                        //CAN_MOVE_DOWN = false;
+
+                        _landLineA = _landLineA_R = _cPoints[(int)HSpots.RU]._polygon[0] + _cPoints[(int)HSpots.RU]._offset;
+                        _landLineB = _landLineB_R = _cPoints[(int)HSpots.RU]._polygon[1] + _cPoints[(int)HSpots.RU]._offset;
+
+                        _landRadian = _landRadian_R = Geo.GetRadian(_landLineA, _landLineB);
+
+                        if (_cPoints[(int)HSpots.DR]._isContact)
+                        {
+                            CAN_MOVE_DOWN = false;
+
+                            _pointLandCollision = _pointLandCollision_R = Collision2D.LineLineIntersection(_landLineA, _landLineB, _cPoints[(int)HSpots.DR]._pos, _cPoints[(int)HSpots.DR]._pos + _cPoints[(int)HSpots.DR]._raycast);
+                            //_pointLandCollision = _pointLandCollision_R = _cPoints[(int)HSpots.DR]._pointContact;
+                            _landY = _landY_R = _pointLandCollision_R.Y - _rect.Height / 2 - 2;
+                        }
+                    }
+
+                // Choose best LandY Left or Right
+                //if (MOVE_LEFT && _contactPoints[(int)CPoint.DL]._isContact)
+                if (_cPoints[(int)HSpots.DL]._isContact && _cPoints[(int)HSpots.DR]._isContact)
                 {
-                    //CAN_MOVE_DOWN = false;
+                    //Console.Write("< BOTH LAND L & R >");
 
-                    _landLineA = _landLineA_L = _contactPoints[(int)HotPoints.LU]._polygon[0] + _contactPoints[(int)HotPoints.LU]._offset;
-                    _landLineB = _landLineB_L = _contactPoints[(int)HotPoints.LU]._polygon[1] + _contactPoints[(int)HotPoints.LU]._offset;
+                    if (_pointLandCollision_L.Y < _pointLandCollision_R.Y)
+                    //if (_landY_L < _landY_R)
+                    {
+                        _pointLandCollision = _pointLandCollision_L;
 
-                    _landRadian = _landRadian_L = Geo.GetRadian(_landLineA, _landLineB);
+                        _landLineA = _landLineA_L;
+                        _landLineB = _landLineB_L;
+                        _landRadian = _landRadian_L;
+                        //_landY_R = _landY = _landY_L;
+                        _landY = _landY_L;
 
-                    _pointLandCollision = _pointLandCollision_L = Collision2D.LineLineIntersection(_landLineA, _landLineB, _contactPoints[(int)HotPoints.DL]._pos, _contactPoints[(int)HotPoints.DL]._pos + _contactPoints[(int)HotPoints.DL]._raycast);
-                    //_pointLandCollision = _pointLandCollision_L = _contactPoints[(int)HotPoints.DL]._pointContact;
+                        _contactPointDown = _cPoints[(int)HSpots.DL];
+                    }
+                    else //if (MOVE_RIGHT && _contactPoints[(int)CPoint.DR]._isContact)
+                    if (_pointLandCollision_L.Y > _pointLandCollision_R.Y)
+                    {
+                        _pointLandCollision = _pointLandCollision_R;
 
-                    _landY = _landY_L = _pointLandCollision_L.Y - _rect.Height / 2 - 2;
+                        _landLineA = _landLineA_R;
+                        _landLineB = _landLineB_R;
+                        _landRadian = _landRadian_R;
+                        //_landY_L = _landY = _landY_R;
+                        _landY = _landY_R;
+
+                        _contactPointDown = _cPoints[(int)HSpots.DR];
+                    }
                 }
 
-                if (!_contactPoints[(int)HotPoints.RU]._isContact && _contactPoints[(int)HotPoints.RU]._tile._type == 3 && MOVE_RIGHT) // && _contactPoints[(int)CPoint.DL]._isContact
-                {
-                    //CAN_MOVE_DOWN = false;
-
-                    _landLineA = _landLineA_R = _contactPoints[(int)HotPoints.RU]._polygon[0] + _contactPoints[(int)HotPoints.RU]._offset;
-                    _landLineB = _landLineB_R = _contactPoints[(int)HotPoints.RU]._polygon[1] + _contactPoints[(int)HotPoints.RU]._offset;
-
-                    _landRadian = _landRadian_R = Geo.GetRadian(_landLineA, _landLineB);
-
-                    _pointLandCollision = _pointLandCollision_R = Collision2D.LineLineIntersection(_landLineA, _landLineB, _contactPoints[(int)HotPoints.DR]._pos, _contactPoints[(int)HotPoints.DR]._pos + _contactPoints[(int)HotPoints.DR]._raycast);
-                    //_pointLandCollision = _pointLandCollision_R = _contactPoints[(int)HotPoints.DR]._pointContact;
-
-                    _landY = _landY_R = _pointLandCollision_R.Y - _rect.Height / 2 - 2;
-                }
                 #endregion
 
                 #region Contact : GRAB LEDGE
 
                 if (CAN_MOVE_UP && CAN_MOVE_DOWN && !CAN_MOVE_LEFT &&
-                    _contactPoints[(int)HotPoints.EL]._isContact &&
-                    Math.Abs(_contactPoints[(int)HotPoints.EL]._pos.Y - _contactPoints[(int)HotPoints.EL]._firstline.B.Y) <= 8)
+                    _cPoints[(int)HSpots.EL]._isContact &&
+                    Math.Abs(_cPoints[(int)HSpots.EL]._pos.Y - _cPoints[(int)HSpots.EL]._firstline.B.Y) <= 8)
                 {
                     
-                    TileMap tileU = _map2D.Get(_contactPoints[(int)HotPoints.EL]._mapX, _contactPoints[(int)HotPoints.EL]._mapY-1);
+                    TileMap tileU = _map2D.Get(_cPoints[(int)HSpots.EL]._mapX, _cPoints[(int)HSpots.EL]._mapY-1);
 
                     bool climbable = false;
 
@@ -676,25 +741,25 @@ namespace Proto_00
                         climbable = true;
                     }
 
-                    if (climbable)
+                    if (climbable && !CAN_GRAB_L)
                     {
                         CAN_GRAB_L = true;
 
-                        _grabY = _contactPoints[(int)HotPoints.EL]._firstline.B.Y - _hotPoints[(int)HotPoints.EL].Y;
+                        _grabY = _cPoints[(int)HSpots.EL]._firstline.B.Y - _hSpots[(int)HSpots.EL].Y;
                         
-                        _ledgeGrip.X = _contactPoints[(int)HotPoints.EL]._firstline.B.X;
-                        _ledgeGrip.Y = _contactPoints[(int)HotPoints.EL]._firstline.B.Y;
+                        _ledgeGrip.X = _cPoints[(int)HSpots.EL]._firstline.B.X;
+                        _ledgeGrip.Y = _cPoints[(int)HSpots.EL]._firstline.B.Y;
                         
                     }
 
                 }
 
                 if (CAN_MOVE_UP && CAN_MOVE_DOWN && !CAN_MOVE_RIGHT &&
-                    _contactPoints[(int)HotPoints.ER]._isContact &&
-                    Math.Abs(_contactPoints[(int)HotPoints.ER]._pos.Y - _contactPoints[(int)HotPoints.ER]._firstline.A.Y) <= 8)
+                    _cPoints[(int)HSpots.ER]._isContact &&
+                    Math.Abs(_cPoints[(int)HSpots.ER]._pos.Y - _cPoints[(int)HSpots.ER]._firstline.A.Y) <= 8)
                 {
 
-                    TileMap tileU = _map2D.Get(_contactPoints[(int)HotPoints.ER]._mapX, _contactPoints[(int)HotPoints.ER]._mapY - 1);
+                    TileMap tileU = _map2D.Get(_cPoints[(int)HSpots.ER]._mapX, _cPoints[(int)HSpots.ER]._mapY - 1);
 
                     bool climbable = false;
 
@@ -714,44 +779,20 @@ namespace Proto_00
                         climbable = true;
                     }
 
-                    if (climbable)
+                    if (climbable && !CAN_GRAB_R)
                     {
                         CAN_GRAB_R = true;
 
-                        _grabY = _contactPoints[(int)HotPoints.ER]._firstline.A.Y - _hotPoints[(int)HotPoints.ER].Y;
+                        _grabY = _cPoints[(int)HSpots.ER]._firstline.A.Y - _hSpots[(int)HSpots.ER].Y;
 
-                        _ledgeGrip.X = _contactPoints[(int)HotPoints.ER]._firstline.A.X;
-                        _ledgeGrip.Y = _contactPoints[(int)HotPoints.ER]._firstline.A.Y;
+                        _ledgeGrip.X = _cPoints[(int)HSpots.ER]._firstline.A.X;
+                        _ledgeGrip.Y = _cPoints[(int)HSpots.ER]._firstline.A.Y;
 
                     }
 
                 }
                 #endregion
 
-            }
-
-            // Choose best LandY Left or Right
-            //if (MOVE_LEFT && _contactPoints[(int)CPoint.DL]._isContact)
-            if (_contactPoints[(int)HotPoints.DL]._isContact && _contactPoints[(int)HotPoints.DR]._isContact)
-            {
-                if ((_pointLandCollision_L.Y < _pointLandCollision_R.Y))
-                {
-                    _pointLandCollision = _pointLandCollision_L;
-
-                    _landLineA = _landLineA_L; 
-                    _landLineB = _landLineB_L;
-                    _landRadian = _landRadian_L;
-                    _landY_R = _landY = _landY_L;
-                }
-                else //if (MOVE_RIGHT && _contactPoints[(int)CPoint.DR]._isContact)
-                {
-                    _pointLandCollision = _pointLandCollision_R;
-
-                    _landLineA = _landLineA_R; 
-                    _landLineB = _landLineB_R;
-                    _landRadian = _landRadian_R;
-                    _landY_L = _landY = _landY_R;
-                }
             }
 
             #endregion
@@ -764,6 +805,9 @@ namespace Proto_00
                 {
                     _preCollisionRayCastY = (_y + _finalVector.Y) - _landY;
                     _finalVector.Y -= _preCollisionRayCastY;
+
+                    //_y = _landY ;
+                    //_finalVector.Y = 0;
 
                     Land();
                 }
@@ -789,7 +833,7 @@ namespace Proto_00
                 {
                     _isPush = true;
 
-                    if (!CAN_WALL_JUMP_R && _status == Status.IS_FALL && CAN_MOVE_UP && _contactPoints[(int)HotPoints.EL]._isContact)
+                    if (!CAN_WALL_JUMP_R && _status == Status.IS_FALL && CAN_MOVE_UP && _cPoints[(int)HSpots.EL]._isContact)
                     {
                         Console.WriteLine("CAN WALL JUMP R");
 
@@ -808,7 +852,7 @@ namespace Proto_00
                 {
                     _isPush = true;
 
-                    if (!CAN_WALL_JUMP_L && _status == Status.IS_FALL && CAN_MOVE_UP && _contactPoints[(int)HotPoints.ER]._isContact)
+                    if (!CAN_WALL_JUMP_L && _status == Status.IS_FALL && CAN_MOVE_UP && _cPoints[(int)HSpots.ER]._isContact)
                     {
                         Console.WriteLine("CAN WALL JUMP L");
 
@@ -825,8 +869,8 @@ namespace Proto_00
                 _finalVector.Y -= _preCollisionRayCastY;
 
                 //Console.WriteLine($"---------------------> _grabY = {_grabY} _preCollisionRayCastY = {_preCollisionRayCastY}");
-
-                Grab();
+                if (CAN_GRAB_L) Grab(ref IS_GRAB_L);
+                if (CAN_GRAB_R) Grab(ref IS_GRAB_R);
             }
 
 
@@ -838,7 +882,7 @@ namespace Proto_00
             {
                 float factor = 1f;
 
-                if (((CAN_WALL_JUMP_L && _contactPoints[(int)HotPoints.ER]._isContact) || (CAN_WALL_JUMP_R && _contactPoints[(int)HotPoints.EL]._isContact) ) && _isPush && CAN_MOVE_UP)
+                if (((CAN_WALL_JUMP_L && _cPoints[(int)HSpots.ER]._isContact) || (CAN_WALL_JUMP_R && _cPoints[(int)HSpots.EL]._isContact) ) && _isPush && CAN_MOVE_UP)
                 {
                     factor = .05f; // Slow down when grip wall
                 }
@@ -849,10 +893,22 @@ namespace Proto_00
 
             }
 
-            if (_status == Status.IS_LAND)
+            if (_status == Status.IS_LAND && _velocity.Y == 0)
             {
                 if (CAN_MOVE_DOWN)
                     Fall();
+
+                //_contactX = _x - _contactDown._mapX * _tileW; _contactY = _contactDown._mapY * _tileH;
+
+                //_contactY = -((_contactY - _landLineA.Y) + (_landLineB.Y - _landLineA.Y) / (_landLineA.X - _landLineB.X) * _contactX) ;
+
+                //_contactY = _contactY + _contactDown._mapY * _tileH;
+
+                //Console.WriteLine($"_contactX = {_contactX} : {_contactY}");
+
+                //if (_contactDown._isContact)
+                //    _y = _contactY - _rect.Height / 2 - 2;
+
             }
 
             if (_status == Status.IS_GRAB)
@@ -874,9 +930,10 @@ namespace Proto_00
 
                         if (MOVE_UP)
                         {
-                            //Console.WriteLine("Climb : MOVE_UP");
-                            if (CAN_CLIMB_L) Climb(-1);
-                            if (CAN_CLIMB_R) Climb(1);
+                            Console.WriteLine($"Climb < {IS_GRAB_L} - {IS_GRAB_R} > : MOVE_UP");
+
+                            if (IS_GRAB_L) Climb(-1);
+                            if (IS_GRAB_R) Climb(1);
                         }
 
                         if (MOVE_DOWN)
@@ -887,11 +944,12 @@ namespace Proto_00
                     }
                     else if (MOVE_JUMP)
                     {
-                        //Console.WriteLine("Climb : MOVE_JUMP");
+                        Console.WriteLine($"Climb < {IS_GRAB_L} - {IS_GRAB_R} > : MOVE_JUMP");
+
                         _readyToClimb = true;
 
-                        if (CAN_CLIMB_L) Climb(-1);
-                        if (CAN_CLIMB_R) Climb(1);
+                        if (IS_GRAB_L) Climb(-1);
+                        if (IS_GRAB_R) Climb(1);
                     }
 
                 }
@@ -902,7 +960,7 @@ namespace Proto_00
             {
                 if (AUTO_UP)
                 {
-                    _y += -3f;
+                    _y += -4f;
 
                     ++_ticAutoUp;
                     if (_ticAutoUp > _rect.Height / 4)
@@ -916,23 +974,26 @@ namespace Proto_00
                 }
                 if (AUTO_MOVE)
                 {
+                    _y += -.5f;
+
                     ++_ticAutoMove;
                     if (_ticAutoMove > _rect.Width/4)
                     {
                         AUTO_MOVE = false;
                         _directionAutoMove = 0;
+
                         //Fall();
                         SetStatus(Status.IS_LAND);
                     }
 
                     if (_directionAutoMove < 0)
                     {
-                        _landRadian = Geo.GetRadian(_contactPoints[(int)HotPoints.EL]._firstline.B, _contactPoints[(int)HotPoints.EL]._firstline.A);
+                        _landRadian = Geo.GetRadian(_cPoints[(int)HSpots.EL]._firstline.B, _cPoints[(int)HSpots.EL]._firstline.A);
                         MoveL();
                     }
                     if (_directionAutoMove > 0)
                     {
-                        _landRadian = Geo.GetRadian(_contactPoints[(int)HotPoints.ER]._firstline.A, _contactPoints[(int)HotPoints.ER]._firstline.B);
+                        _landRadian = Geo.GetRadian(_cPoints[(int)HSpots.ER]._firstline.A, _cPoints[(int)HSpots.ER]._firstline.B);
                         MoveR();
                     }
                 }

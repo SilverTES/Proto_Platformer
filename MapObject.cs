@@ -15,7 +15,10 @@ namespace Proto_00
         protected int _mapPosX;
         protected int _mapPosY;
 
-        //public TileMap TILE_AT;
+        public int MapX => _mapPosX;
+        public int MapY => _mapPosY;
+
+        public TileMap TILE_AT;
         //public TileMap TILE_AT_L;
         //public TileMap TILE_AT_R;
         //public TileMap TILE_AT_U;
@@ -41,7 +44,7 @@ namespace Proto_00
             _mapPosX = (int)(_x / _tileW);
             _mapPosY = (int)(_y / _tileH);
 
-            //TILE_AT = _map2D.Get(_mapPosX, _mapPosY);
+            TILE_AT = _map2D.Get(_mapPosX, _mapPosY);
             //TILE_AT_L = _map2D.Get(_mapPosX - 1, _mapPosY);
             //TILE_AT_R = _map2D.Get(_mapPosX + 1, _mapPosY);
             //TILE_AT_U = _map2D.Get(_mapPosX, _mapPosY - 1);
